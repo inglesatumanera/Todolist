@@ -48,6 +48,7 @@ struct Task: Identifiable, Codable, Equatable {
     var category: TaskCategory
     var dueDate: Date?
     var subtasks: [Task]? // New: An optional array of sub-tasks
+    var completionDate: Date?
 }
 
 enum TaskStatus: Codable, Equatable {
