@@ -18,8 +18,8 @@ struct To_Do_ListApp: App {
                     updateLastOpenDate()
                 })
             } else {
-                // Pass tasks down to MainTabView
-                MainTabView(tasks: $tasks)
+                // Pass tasks down to the new AppHomeView
+                AppHomeView(tasks: $tasks)
             }
         }
     }
