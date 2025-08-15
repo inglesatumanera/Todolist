@@ -32,9 +32,7 @@ struct AppHomeView: View {
                 case .week:
                     WeekView(tasks: $tasks)
                 case .month:
-                    Text("Month View Placeholder")
-                        .font(.title)
-                        .frame(maxHeight: .infinity)
+                    MonthView(tasks: $tasks)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
