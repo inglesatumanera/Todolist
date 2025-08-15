@@ -30,9 +30,7 @@ struct AppHomeView: View {
                 case .today:
                     TodayView(tasks: $tasks)
                 case .week:
-                    Text("Week View Placeholder")
-                        .font(.title)
-                        .frame(maxHeight: .infinity)
+                    WeekView(tasks: $tasks)
                 case .month:
                     Text("Month View Placeholder")
                         .font(.title)
