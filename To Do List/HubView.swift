@@ -1,9 +1,8 @@
 import SwiftUI
 
 struct HubView: View {
-    @State private var tasks: [Task] = PersistenceManager.loadTasks()
-    @State private var showOnboarding = !PersistenceManager.isOnboardingComplete()
-    @State private var userData: UserData?
+    @Binding var tasks: [Task]
+    var userData: UserData?
 
     let gridLayout = [
         GridItem(.adaptive(minimum: 150))
@@ -32,23 +31,6 @@ struct HubView: View {
                     .cornerRadius(12)
                     .padding([.horizontal, .bottom])
                 }
-
-                // Standalone card for Today's Tasks
-                NavigationLink(destination: TodayView(tasks: $tasks)) {
-                    HStack {
-                        Image(systemName: "checklist.checked")
-                            .foregroundColor(.white)
-                        Text("Today's Tasks")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.blue)
-                    .cornerRadius(12)
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 10)
                 
                 // Grid of Parent Categories
                 LazyVGrid(columns: gridLayout, spacing: 16) {
@@ -62,18 +44,8 @@ struct HubView: View {
             }
             .navigationTitle("Dashboard")
         }
-        .onAppear(perform: loadUserData)
         .onChange(of: tasks) { _ in
             PersistenceManager.saveTasks(tasks)
         }
-        .sheet(isPresented: $showOnboarding, onDismiss: {
-            self.userData = PersistenceManager.loadUserData()
-        }) {
-            OnboardingView(isOnboardingComplete: $showOnboarding)
-        }
-    }
-
-    private func loadUserData() {
-        self.userData = PersistenceManager.loadUserData()
     }
 }
