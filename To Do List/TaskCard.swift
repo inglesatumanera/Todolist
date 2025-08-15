@@ -65,6 +65,12 @@ struct TaskCard: View {
     func moveTask(to newStatus: TaskStatus) {
         if let index = allTasks.firstIndex(where: { $0.id == task.id }) {
             allTasks[index].status = newStatus
+            if newStatus == .completed {
+                allTasks[index].completionDate = Date()
+            } else {
+                // Optional: Clear the completion date if moved out of completed
+                allTasks[index].completionDate = nil
+            }
         }
     }
 

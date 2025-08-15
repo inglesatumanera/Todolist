@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var tasks = PersistenceManager.loadTasks()
+    @Binding var tasks: [Task]
     @State private var userData: UserData?
 
     var body: some View {
