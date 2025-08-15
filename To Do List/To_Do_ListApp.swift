@@ -24,6 +24,13 @@ struct To_Do_ListApp: App {
         }
     }
 
+    private static func getAppDay(for date: Date) -> Date {
+        let calendar = Calendar.current
+        // Subtract 5 hours to shift the day's start time
+        let shiftedDate = calendar.date(byAdding: .hour, value: -5, to: date)!
+        return calendar.startOfDay(for: shiftedDate)
+    }
+
     private static func shouldShowReturningUserFlow() -> Bool {
         // Only show the flow if onboarding is already complete.
         guard PersistenceManager.isOnboardingComplete() else {
@@ -34,7 +41,11 @@ struct To_Do_ListApp: App {
         guard let lastOpenDate = defaults.object(forKey: "lastOpenDate") as? Date else {
             return true
         }
-        return !Calendar.current.isDateInToday(lastOpenDate)
+
+        let lastAppDay = getAppDay(for: lastOpenDate)
+        let currentAppDay = getAppDay(for: Date())
+
+        return lastAppDay != currentAppDay
     }
 
     private func updateLastOpenDate() {
