@@ -2,74 +2,39 @@ import SwiftUI
 
 struct TodayView: View {
     @Binding var tasks: [Task]
-    @State private var selectedTab: Int = 1
+    @State private var isPastDueExpanded = true
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // Past Due Tab
-            List {
-                ForEach(pastDueTasks) { task in
-                    if let binding = binding(for: task) {
-                        TaskCard(task: binding, allTasks: $tasks)
-                            .listRowBackground(Color.red.opacity(0.1))
+        List {
+            // Past Due Section
+            if !pastDueTasks.isEmpty {
+                DisclosureGroup(isExpanded: $isPastDueExpanded) {
+                    ForEach(pastDueTasks) { task in
+                        if let binding = binding(for: task) {
+                            TaskCard(task: binding, allTasks: $tasks)
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Text("Let's catch up!")
+                            .font(.headline)
+                        Spacer()
+                        Text("\(pastDueTasks.count) overdue")
+                            .font(.caption)
                     }
                 }
             }
-            .tabItem {
-                VStack {
-                    Image(systemName: "calendar.badge.minus")
-                    Text("Past Due")
-                }
-            }
-            .listStyle(.insetGrouped)
-            .tag(0)
-            .badge(pastDueTasks.count)
-            
-            // Due Today Tab
-            List {
+
+            // Today's Tasks Section
+            Section(header: Text(todayTasks.isEmpty ? "No Tasks Today!" : "Today's Focus")) {
                 ForEach(todayTasks) { task in
                     if let binding = binding(for: task) {
                         TaskCard(task: binding, allTasks: $tasks)
                     }
                 }
             }
-            .tabItem {
-                VStack {
-                    Image(systemName: "calendar")
-                    Text("Due Today")
-                }
-            }
-            .listStyle(.insetGrouped)
-            .tag(1)
-            .badge(todayTasks.count)
-
-            // Tomorrow Tab
-            List {
-                ForEach(TaskCategory.allCases, id: \.self) { category in
-                    let filteredTasks = tomorrowTasks(for: category)
-                    if !filteredTasks.isEmpty {
-                        Section(header: Text(category.rawValue)) {
-                            ForEach(filteredTasks) { task in
-                                if let binding = binding(for: task) {
-                                    TaskCard(task: binding, allTasks: $tasks)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            .tabItem {
-                VStack {
-                    Image(systemName: "calendar.badge.plus")
-                    Text("Tomorrow")
-                }
-            }
-            .listStyle(.insetGrouped)
-            .tag(2)
-            .badge(tomorrowTasksCount)
         }
-        .accentColor(.blue)
-        .navigationTitle("Upcoming Tasks")
+        .listStyle(.insetGrouped)
     }
 
     private func binding(for task: Task) -> Binding<Task>? {
@@ -119,17 +84,4 @@ struct TodayView: View {
         }
     }
     
-    private var tomorrowTasksCount: Int {
-        allTasksAndSubtasks().filter { task in
-            guard let dueDate = task.dueDate else { return false }
-            return Calendar.current.isDateInTomorrow(dueDate) && task.status != .completed
-        }.count
-    }
-
-    private func tomorrowTasks(for category: TaskCategory) -> [Task] {
-        allTasksAndSubtasks().filter { task in
-            guard let dueDate = task.dueDate else { return false }
-            return Calendar.current.isDateInTomorrow(dueDate) && task.status != .completed && task.category == category
-        }
-    }
 }
