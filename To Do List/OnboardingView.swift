@@ -9,20 +9,32 @@ struct OnboardingView: View {
     @State private var currentStep = 0
 
     var body: some View {
-        VStack {
-            if currentStep == 0 {
-                nameStep
-            } else {
-                goalsStep
+        ZStack {
+            // This will be the view behind the onboarding sheet.
+            // In a real app, this would be the main content view.
+            // For the preview, we can use a color or an image.
+            Color.gray.ignoresSafeArea()
+
+            VStack {
+                if currentStep == 0 {
+                    nameStep
+                } else {
+                    goalsStep
+                }
             }
+            .padding()
+            .background(.ultraThinMaterial)
+            .cornerRadius(20)
+            .padding()
         }
-        .padding()
     }
 
     var nameStep: some View {
         VStack {
-            Text("Welcome! What's your name?")
+            Text("Let's Make Great Things Happen! What Should I Call You?")
                 .font(.largeTitle)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
                 .padding()
             TextField("Your Name", text: $name)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -41,8 +53,10 @@ struct OnboardingView: View {
 
     var goalsStep: some View {
         VStack {
-            Text("What are your 3 biggest goals, \(name)?")
+            Text("Awesome, \(name)! Now, What Are Your Top 3 Goals?")
                 .font(.largeTitle)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
                 .padding()
             TextField("Goal 1", text: $goal1)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
