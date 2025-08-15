@@ -3,6 +3,8 @@ import SwiftUI
 struct TodayView: View {
     @Binding var tasks: [Task]
     @State private var isPastDueExpanded = true
+    @State private var taskToReschedule: Binding<Task>?
+    @State private var showingRescheduleSheet = false
 
     var body: some View {
         List {
@@ -12,6 +14,20 @@ struct TodayView: View {
                     ForEach(pastDueTasks) { task in
                         if let binding = binding(for: task) {
                             TaskCard(task: binding, allTasks: $tasks)
+                                .contextMenu {
+                                    Button {
+                                        moveTaskToToday(taskBinding: binding)
+                                    } label: {
+                                        Label("Move to Today", systemImage: "arrow.right.to.square")
+                                    }
+
+                                    Button {
+                                        taskToReschedule = binding
+                                        showingRescheduleSheet = true
+                                    } label: {
+                                        Label("Reschedule", systemImage: "calendar.badge.plus")
+                                    }
+                                }
                         }
                     }
                 } label: {
@@ -35,6 +51,15 @@ struct TodayView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .sheet(isPresented: $showingRescheduleSheet) {
+            if let taskBinding = taskToReschedule {
+                RescheduleView(task: taskBinding)
+            }
+        }
+    }
+
+    private func moveTaskToToday(taskBinding: Binding<Task>) {
+        taskBinding.wrappedValue.dueDate = Date()
     }
 
     private func binding(for task: Task) -> Binding<Task>? {
