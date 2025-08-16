@@ -3,12 +3,21 @@ import SwiftUI
 struct AddTaskView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var tasks: [Task]
-    let selectedCategory: TaskCategory
+    @Binding var categoryData: CategoryManager.CategoryData
+    let selectedSubCategoryID: UUID
 
     @State private var title: String = ""
     @State private var dueDate: Date = Date()
     @State private var hasDueDate: Bool = false
     @State private var taskType: TaskType = .simple
+    @State private var subCategoryID: UUID
+
+    init(tasks: Binding<[Task]>, categoryData: Binding<CategoryManager.CategoryData>, selectedSubCategoryID: UUID) {
+        self._tasks = tasks
+        self._categoryData = categoryData
+        self.selectedSubCategoryID = selectedSubCategoryID
+        self._subCategoryID = State(initialValue: selectedSubCategoryID)
+    }
 
     var body: some View {
         NavigationView {
@@ -21,6 +30,16 @@ struct AddTaskView: View {
                         Text("Project").tag(TaskType.project)
                     }
                     .pickerStyle(.segmented)
+
+                    Picker("Category", selection: $subCategoryID) {
+                        ForEach(categoryData.categories) { category in
+                            Section(header: Text(category.name)) {
+                                ForEach(categoryData.subCategories.filter { $0.parentCategoryID == category.id }) { subCategory in
+                                    Text(subCategory.name).tag(subCategory.id)
+                                }
+                            }
+                        }
+                    }
                 }
 
                 Section(header: Text("Due Date")) {
@@ -53,9 +72,9 @@ struct AddTaskView: View {
             title: title,
             type: taskType,
             status: .todo,
-            category: selectedCategory,
+            subCategoryID: subCategoryID,
             dueDate: hasDueDate ? dueDate : nil,
-            subtasks: nil // Projects will be handled later
+            subtasks: taskType == .project ? [] : nil
         )
         tasks.append(newTask)
     }

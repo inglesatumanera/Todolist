@@ -3,12 +3,12 @@ import SwiftUI
 struct SubCategoryView: View {
     @Binding var tasks: [Task]
     let category: Category
-    @Binding var subCategories: [SubCategory]
+    @Binding var categoryData: CategoryManager.CategoryData
     var onEdit: (SubCategory) -> Void
     var onDelete: (SubCategory) -> Void
 
     private var filteredSubCategories: [SubCategory] {
-        subCategories.filter { $0.parentCategoryID == category.id }
+        categoryData.subCategories.filter { $0.parentCategoryID == category.id }
     }
 
     let gridLayout = [
@@ -19,7 +19,7 @@ struct SubCategoryView: View {
         ScrollView {
             LazyVGrid(columns: gridLayout, spacing: 16) {
                 ForEach(filteredSubCategories) { subCategory in
-                    NavigationLink(destination: Text("Task List for \(subCategory.name)")) {
+                    NavigationLink(destination: TaskBoardView(tasks: $tasks, categoryData: $categoryData, selectedSubCategory: subCategory)) {
                         SubcategoryCardView(subcategory: subCategory, category: category, taskCount: filteredTasksCount(for: subCategory))
                             .contextMenu {
                                 Button("Edit") { onEdit(subCategory) }
