@@ -56,7 +56,7 @@ struct HubView: View {
                         NavigationLink(destination: SubCategoryView(
                             tasks: $tasks,
                             category: category,
-                            subCategories: $categoryData.subCategories,
+                            categoryData: $categoryData,
                             onEdit: { subCategory in sheetContext = .editSubCategory(subCategory) },
                             onDelete: { subCategory in
                                 itemToDelete = subCategory
