@@ -31,9 +31,27 @@ struct WeekView: View {
     @Binding var tasks: [Task]
     @State private var currentWeek: [Date] = []
     @State private var selectedDate: Date = Date()
+    @State private var needsReview: Bool = false
+    @State private var showReviewSheet: Bool = false
 
     var body: some View {
         VStack(spacing: 20) {
+            if needsReview {
+                Button(action: { showReviewSheet = true }) {
+                    HStack {
+                        Image(systemName: "text.badge.star")
+                        Text("Review Last Week")
+                            .fontWeight(.bold)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.green.opacity(0.8))
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+                .padding(.horizontal)
+            }
+
             WeeklyFocusView(date: Date())
                 .padding(.horizontal)
 
@@ -86,7 +104,25 @@ struct WeekView: View {
         }
         .onAppear {
             fetchCurrentWeek()
+            checkNeedsReview()
         }
+        .sheet(isPresented: $showReviewSheet, onDismiss: {
+            // Mark the prompt as seen for this week so it doesn't appear again.
+            WeeklyReviewManager.shared.markReviewAsSeen(for: Date())
+            self.needsReview = false
+        }) {
+            WeeklyReviewFlowView(tasks: $tasks) {
+                // This closure is called when the user taps "Finish Review"
+                self.showReviewSheet = false
+            }
+        }
+    }
+
+    private func checkNeedsReview() {
+        // A review is needed if the user hasn't seen the prompt for last week's review yet.
+        // We don't check if they *filled it out*, only if they've seen the prompt.
+        // This prevents the prompt from reappearing if they dismiss the sheet.
+        self.needsReview = !WeeklyReviewManager.shared.hasSeenReviewPrompt(for: Date())
     }
 
     // A view for a single day in the calendar
