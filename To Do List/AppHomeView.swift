@@ -2,6 +2,8 @@ import SwiftUI
 
 struct AppHomeView: View {
     @Binding var tasks: [Task]
+    @Binding var categoryData: CategoryManager.CategoryData
+    @State private var showingGoalsHub = false
 
     // Enum to represent the tabs
     enum SelectedTab {
@@ -37,14 +39,20 @@ struct AppHomeView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .principal) {
-                    // This is a common trick to use a custom view in the nav bar space
-                    // But for now, let's just rely on the custom bar below it.
-                    // We can hide the nav bar if needed, but this setup works.
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingGoalsHub = true }) {
+                        Image(systemName: "square.grid.2x2")
+                    }
                 }
             }
         }
         .navigationViewStyle(StackNavigationViewStyle()) // Prevents sidebar on iPad
+        .sheet(isPresented: $showingGoalsHub) {
+            // The HubView will be the "Goals Hub"
+            // It needs to be refactored to use the new data
+            // For now, we pass a placeholder binding
+            HubView(tasks: $tasks, userData: nil, categoryData: $categoryData)
+        }
     }
 
     // Reusable button view for the tab bar

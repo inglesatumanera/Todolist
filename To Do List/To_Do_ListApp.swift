@@ -5,8 +5,9 @@ struct To_Do_ListApp: App {
     @State private var showOnboarding = !PersistenceManager.isOnboardingComplete()
     @State private var showReturningUserFlow = To_Do_ListApp.shouldShowReturningUserFlow()
 
-    // Lift the state of tasks to the App level
+    // Lift state to the App level
     @State private var tasks = PersistenceManager.loadTasks()
+    @State private var categoryData = CategoryManager.shared.load()
 
     var body: some Scene {
         WindowGroup {
@@ -18,8 +19,8 @@ struct To_Do_ListApp: App {
                     updateLastOpenDate()
                 })
             } else {
-                // Pass tasks down to the new AppHomeView
-                AppHomeView(tasks: $tasks)
+                // Pass data down to the new AppHomeView
+                AppHomeView(tasks: $tasks, categoryData: $categoryData)
             }
         }
     }

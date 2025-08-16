@@ -2,7 +2,12 @@ import SwiftUI
 
 struct SubCategoryView: View {
     @Binding var tasks: [Task]
-    let parent: ParentCategory
+    let category: Category
+    let subCategories: [SubCategory]
+
+    private var filteredSubCategories: [SubCategory] {
+        subCategories.filter { $0.parentCategoryID == category.id }
+    }
 
     let gridLayout = [
         GridItem(.adaptive(minimum: 150))
@@ -11,18 +16,18 @@ struct SubCategoryView: View {
     var body: some View {
         ScrollView {
             LazyVGrid(columns: gridLayout, spacing: 16) {
-                ForEach(TaskCategory.allCases.filter { $0.parent == parent }) { subcategory in
-                    NavigationLink(destination: ContentView(tasks: $tasks, selectedCategory: subcategory)) {
-                        SubcategoryCardView(subcategory: subcategory, taskCount: filteredTasksCount(for: subcategory))
+                ForEach(filteredSubCategories) { subCategory in
+                    NavigationLink(destination: Text("Task List for \(subCategory.name)")) {
+                        SubcategoryCardView(subcategory: subCategory, category: category, taskCount: filteredTasksCount(for: subCategory))
                     }
                 }
             }
             .padding(.horizontal)
         }
-        .navigationTitle(parent.rawValue)
+        .navigationTitle(category.name)
     }
 
-    private func filteredTasksCount(for subcategory: TaskCategory) -> Int {
-        tasks.filter { $0.category == subcategory }.count
+    private func filteredTasksCount(for subCategory: SubCategory) -> Int {
+        tasks.filter { $0.subCategoryID == subCategory.id }.count
     }
 }
