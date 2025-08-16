@@ -3,6 +3,7 @@ import SwiftUI
 struct HubView: View {
     @Binding var tasks: [Task]
     var userData: UserData?
+    @Binding var categoryData: CategoryManager.CategoryData
 
     let gridLayout = [
         GridItem(.adaptive(minimum: 150))
@@ -32,11 +33,11 @@ struct HubView: View {
                     .padding([.horizontal, .bottom])
                 }
                 
-                // Grid of Parent Categories
+                // Grid of Categories
                 LazyVGrid(columns: gridLayout, spacing: 16) {
-                    ForEach(ParentCategory.allCases) { parent in
-                        NavigationLink(destination: SubCategoryView(tasks: $tasks, parent: parent)) {
-                            HubCardView(parentCategory: parent)
+                    ForEach(categoryData.categories) { category in
+                        NavigationLink(destination: SubCategoryView(tasks: $tasks, category: category, subCategories: categoryData.subCategories)) {
+                            HubCardView(category: category)
                         }
                     }
                 }
