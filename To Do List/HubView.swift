@@ -4,6 +4,7 @@ struct HubView: View {
     @Binding var tasks: [Task]
     var userData: UserData?
     @Binding var categoryData: CategoryManager.CategoryData
+    @State private var showingAddCategorySheet = false
 
     let gridLayout = [
         GridItem(.adaptive(minimum: 150))
@@ -43,10 +44,20 @@ struct HubView: View {
                 }
                 .padding(.horizontal)
             }
-            .navigationTitle("Dashboard")
+            .navigationTitle("Goals Hub")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingAddCategorySheet = true }) {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
         }
         .onChange(of: tasks) { _ in
             PersistenceManager.saveTasks(tasks)
+        }
+        .sheet(isPresented: $showingAddCategorySheet) {
+            AddCategoryView(categoryData: $categoryData)
         }
     }
 }
