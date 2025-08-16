@@ -94,7 +94,7 @@ struct WeekView: View {
                             Text(task.title)
                                 .padding()
                                 .onDrag {
-                                    return task
+                                    return NSItemProvider(object: task)
                                 }
                         }
                     }

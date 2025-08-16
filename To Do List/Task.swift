@@ -1,4 +1,4 @@
-import Foundation
+import SwiftUI
 import UniformTypeIdentifiers
 
 // Enum to distinguish between a simple task and a project
