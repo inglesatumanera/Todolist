@@ -8,6 +8,8 @@ struct MonthView: View {
     @Binding var tasks: [Task]
     @State private var date = Date()
     @State private var monthGrid: [Date] = []
+    @State private var needsMonthlyReview: Bool = false
+    @State private var showMonthlyReviewSheet: Bool = false
 
     private let columns = Array(repeating: GridItem(.flexible()), count: 7)
     private var weekdaySymbols: [String] {
@@ -23,6 +25,22 @@ struct MonthView: View {
 
     var body: some View {
         VStack(spacing: 20) {
+            if needsMonthlyReview {
+                Button(action: { showMonthlyReviewSheet = true }) {
+                    HStack {
+                        Image(systemName: "text.badge.star")
+                        Text("Review This Month & Plan Next")
+                            .fontWeight(.bold)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.green.opacity(0.8))
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+                .padding(.horizontal)
+            }
+
             MonthlyThemeView(date: date)
                 .padding(.horizontal)
 
@@ -56,6 +74,27 @@ struct MonthView: View {
         }
         .onAppear {
             generateMonthGrid()
+            checkNeedsReview()
+        }
+        .sheet(isPresented: $showMonthlyReviewSheet, onDismiss: {
+            MonthlyReviewManager.shared.markReviewAsSeen(for: date)
+            self.needsMonthlyReview = false
+        }) {
+            MonthlyReviewFlowView(tasks: $tasks) {
+                self.showMonthlyReviewSheet = false
+            }
+        }
+    }
+
+    private func checkNeedsReview() {
+        let calendar = Calendar.current
+        let dayOfMonth = calendar.component(.day, from: date)
+
+        // Show prompt after the 25th of the month
+        if dayOfMonth > 25 {
+            self.needsMonthlyReview = !MonthlyReviewManager.shared.hasSeenReviewPrompt(for: date)
+        } else {
+            self.needsMonthlyReview = false
         }
     }
 
