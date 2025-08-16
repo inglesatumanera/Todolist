@@ -17,8 +17,7 @@ struct WelcomeView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.4), Color.purple.opacity(0.6)]), startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+            AnimatedGradientView()
 
             VStack(spacing: 20) {
                 Text(greeting)
