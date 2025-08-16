@@ -30,6 +30,7 @@ struct DayDropDelegate: DropDelegate {
 struct WeekView: View {
     @Binding var tasks: [Task]
     @State private var currentWeek: [Date] = []
+    @State private var selectedDate: Date = Date()
 
     var body: some View {
         VStack(spacing: 20) {
@@ -45,6 +46,18 @@ struct WeekView: View {
                 .padding(.horizontal)
             }
             .frame(height: 100)
+
+            // Tasks for selected day
+            List {
+                ForEach(tasksForSelectedDay) { task in
+                    // Need a binding to the task for TaskCard
+                    if let binding = binding(for: task) {
+                        TaskCard(task: binding, allTasks: $tasks)
+                    }
+                }
+            }
+            .listStyle(.plain)
+            .frame(height: 200) // Give it a fixed height for now
 
             // Task Hub
             VStack(alignment: .leading) {
@@ -80,6 +93,7 @@ struct WeekView: View {
     @ViewBuilder
     private func dayView(for day: Date) -> some View {
         let isToday = Calendar.current.isDateInToday(day)
+        let isSelected = Calendar.current.isDate(day, inSameDayAs: selectedDate)
         let count = taskCount(for: day)
 
         VStack(spacing: 4) {
@@ -107,6 +121,13 @@ struct WeekView: View {
         .frame(width: 60, height: 80)
         .background(isToday ? Color.blue : Color(.systemGray6))
         .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
+        )
+        .onTapGesture {
+            selectedDate = day
+        }
         .onDrop(of: [UTType.toDoItem], delegate: DayDropDelegate(day: day, tasks: $tasks))
     }
 
@@ -133,5 +154,27 @@ struct WeekView: View {
 
     private var unscheduledTasks: [Task] {
         return tasks.filter { $0.dueDate == nil }
+    }
+
+    private var tasksForSelectedDay: [Task] {
+        return tasks.filter { task in
+            guard let dueDate = task.dueDate else { return false }
+            return Calendar.current.isDate(dueDate, inSameDayAs: selectedDate)
+        }
+    }
+
+    private func binding(for task: Task) -> Binding<Task>? {
+        if let index = tasks.firstIndex(where: { $0.id == task.id }) {
+            return $tasks[index]
+        }
+        for parentIndex in tasks.indices {
+            if let subtaskIndex = tasks[parentIndex].subtasks?.firstIndex(where: { $0.id == task.id }) {
+                return Binding(
+                    get: { tasks[parentIndex].subtasks![subtaskIndex] },
+                    set: { tasks[parentIndex].subtasks![subtaskIndex] = $0 }
+                )
+            }
+        }
+        return nil
     }
 }
