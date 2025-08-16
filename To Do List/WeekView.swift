@@ -5,7 +5,10 @@ struct WeekView: View {
     @State private var currentWeek: [Date] = []
 
     var body: some View {
-        VStack {
+        VStack(spacing: 20) {
+            WeeklyFocusView(date: Date())
+                .padding(.horizontal)
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(currentWeek, id: \.self) { day in
