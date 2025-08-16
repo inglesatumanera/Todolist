@@ -30,8 +30,9 @@ struct WeekView: View {
     @ViewBuilder
     private func dayView(for day: Date) -> some View {
         let isToday = Calendar.current.isDateInToday(day)
+        let count = taskCount(for: day)
 
-        VStack(spacing: 8) {
+        VStack(spacing: 4) {
             Text(day.formatted(.dateTime.weekday(.abbreviated)))
                 .font(.caption)
                 .fontWeight(isToday ? .bold : .regular)
@@ -41,6 +42,16 @@ struct WeekView: View {
                 .font(.title2)
                 .fontWeight(.semibold)
                 .foregroundColor(isToday ? .white : .primary)
+
+            Spacer()
+
+            HStack(spacing: 4) {
+                if count > 0 { Circle().frame(width: 5, height: 5) }
+                if count > 2 { Circle().frame(width: 5, height: 5) }
+                if count > 4 { Circle().frame(width: 5, height: 5) }
+            }
+            .foregroundColor(isToday ? .white.opacity(0.7) : .secondary.opacity(0.7))
+            .frame(height: 5)
         }
         .padding(8)
         .frame(width: 60, height: 80)
@@ -60,5 +71,12 @@ struct WeekView: View {
             }
         }
         self.currentWeek = weekDays
+    }
+
+    private func taskCount(for day: Date) -> Int {
+        return tasks.filter { task in
+            guard let dueDate = task.dueDate else { return false }
+            return Calendar.current.isDate(dueDate, inSameDayAs: day)
+        }.count
     }
 }
