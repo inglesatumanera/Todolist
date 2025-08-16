@@ -1,4 +1,5 @@
 import Foundation
+import UniformTypeIdentifiers
 
 // Enum to distinguish between a simple task and a project
 enum TaskType: Codable, Equatable {
@@ -55,4 +56,14 @@ enum TaskStatus: Codable, Equatable {
     case todo
     case inProgress
     case completed
+}
+
+extension Task: Transferable {
+    static var transferRepresentation: some TransferRepresentation {
+        CodableRepresentation(contentType: .toDoItem)
+    }
+}
+
+extension UTType {
+    static var toDoItem: UTType { UTType(exportedAs: "com.ralph-learning.ToDoList.toDoItem") }
 }
