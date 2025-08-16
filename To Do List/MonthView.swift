@@ -1,5 +1,9 @@
 import SwiftUI
 
+enum DayStatus {
+    case allCompleted, someCompleted, noneCompleted, noTasks
+}
+
 struct MonthView: View {
     @Binding var tasks: [Task]
     @State private var date = Date()
@@ -32,11 +36,17 @@ struct MonthView: View {
             // Calendar Grid
             LazyVGrid(columns: columns, spacing: 15) {
                 ForEach(monthGrid, id: \.self) { day in
-                    Text(day.formatted(.dateTime.day()))
-                        .frame(maxWidth: .infinity, minHeight: 40)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
-                        .opacity(isDateInCurrentMonth(day) ? 1.0 : 0.4)
+                    VStack(spacing: 4) {
+                        Text(day.formatted(.dateTime.day()))
+
+                        Circle()
+                            .fill(dotColor(for: status(for: day)))
+                            .frame(width: 8, height: 8)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 40)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+                    .opacity(isDateInCurrentMonth(day) ? 1.0 : 0.4)
                 }
             }
             .padding()
@@ -70,5 +80,39 @@ struct MonthView: View {
         }
 
         self.monthGrid = gridDates
+    }
+
+    private func dotColor(for status: DayStatus) -> Color {
+        switch status {
+        case .allCompleted:
+            return .green
+        case .someCompleted:
+            return .yellow
+        case .noneCompleted:
+            return .gray
+        case .noTasks:
+            return .clear
+        }
+    }
+
+    private func status(for day: Date) -> DayStatus {
+        let dayTasks = tasks.filter { task in
+            guard let dueDate = task.dueDate else { return false }
+            return Calendar.current.isDate(dueDate, inSameDayAs: day)
+        }
+
+        if dayTasks.isEmpty {
+            return .noTasks
+        }
+
+        let completedCount = dayTasks.filter { $0.status == .completed }.count
+
+        if completedCount == 0 {
+            return .noneCompleted
+        } else if completedCount == dayTasks.count {
+            return .allCompleted
+        } else {
+            return .someCompleted
+        }
     }
 }
