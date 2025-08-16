@@ -19,10 +19,24 @@ struct WeekView: View {
             }
             .frame(height: 100)
 
-            // Placeholder for tasks of the selected day
-            Spacer()
-            Text("Tasks for the selected day will appear here.")
-            Spacer()
+            // Task Hub
+            VStack(alignment: .leading) {
+                Text("Task Hub")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.horizontal)
+
+                if unscheduledTasks.isEmpty {
+                    Text("No unscheduled tasks. Great job!")
+                        .foregroundColor(.secondary)
+                        .padding()
+                } else {
+                    List(unscheduledTasks) { task in
+                        Text(task.title)
+                    }
+                    .listStyle(.plain)
+                }
+            }
         }
         .onAppear {
             fetchCurrentWeek()
@@ -81,5 +95,9 @@ struct WeekView: View {
             guard let dueDate = task.dueDate else { return false }
             return Calendar.current.isDate(dueDate, inSameDayAs: day)
         }.count
+    }
+
+    private var unscheduledTasks: [Task] {
+        return tasks.filter { $0.dueDate == nil }
     }
 }
