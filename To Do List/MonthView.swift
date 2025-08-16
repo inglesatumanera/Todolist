@@ -22,7 +22,10 @@ struct MonthView: View {
     }
 
     var body: some View {
-        VStack {
+        VStack(spacing: 20) {
+            MonthlyThemeView(date: date)
+                .padding(.horizontal)
+
             // Weekday Headers
             HStack {
                 ForEach(weekdaySymbols, id: \.self) { symbol in
