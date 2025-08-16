@@ -1,4 +1,31 @@
 import SwiftUI
+import UniformTypeIdentifiers
+
+struct DayDropDelegate: DropDelegate {
+    let day: Date
+    @Binding var tasks: [Task]
+
+    func performDrop(info: DropInfo) -> Bool {
+        guard let item = info.itemProviders(for: [.toDoItem]).first else {
+            return false
+        }
+
+        item.loadTransferable(type: Task.self) { result in
+            switch result {
+            case .success(let droppedTask):
+                DispatchQueue.main.async {
+                    if let index = self.tasks.firstIndex(where: { $0.id == droppedTask.id }) {
+                        self.tasks[index].dueDate = self.day
+                    }
+                }
+            case .failure(let error):
+                print("Error loading dropped item: \(error)")
+            }
+        }
+
+        return true
+    }
+}
 
 struct WeekView: View {
     @Binding var tasks: [Task]
@@ -31,8 +58,14 @@ struct WeekView: View {
                         .foregroundColor(.secondary)
                         .padding()
                 } else {
-                    List(unscheduledTasks) { task in
-                        Text(task.title)
+                    List {
+                        ForEach(unscheduledTasks) { task in
+                            Text(task.title)
+                                .padding()
+                                .onDrag {
+                                    return task
+                                }
+                        }
                     }
                     .listStyle(.plain)
                 }
@@ -74,6 +107,7 @@ struct WeekView: View {
         .frame(width: 60, height: 80)
         .background(isToday ? Color.blue : Color(.systemGray6))
         .cornerRadius(12)
+        .onDrop(of: [UTType.toDoItem], delegate: DayDropDelegate(day: day, tasks: $tasks))
     }
 
     private func fetchCurrentWeek() {
