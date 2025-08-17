@@ -29,6 +29,7 @@ struct DayDropDelegate: DropDelegate {
 
 struct WeekView: View {
     @Binding var tasks: [Task]
+    @Binding var categoryData: CategoryManager.CategoryData
     @State private var currentWeek: [Date] = []
     @State private var selectedDate: Date = Date()
     @State private var needsReview: Bool = false
@@ -70,7 +71,7 @@ struct WeekView: View {
                 ForEach(tasksForSelectedDay) { task in
                     // Need a binding to the task for TaskCard
                     if let binding = binding(for: task) {
-                        TaskCard(task: binding, allTasks: $tasks)
+                        TaskCard(task: binding, allTasks: $tasks, categoryData: $categoryData)
                     }
                 }
             }

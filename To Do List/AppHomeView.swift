@@ -38,9 +38,9 @@ struct AppHomeView: View {
                 // View Content
                 switch selectedTab {
                 case .today:
-                    TodayView(tasks: $tasks)
+                    TodayView(tasks: $tasks, categoryData: $categoryData)
                 case .week:
-                    WeekView(tasks: $tasks)
+                    WeekView(tasks: $tasks, categoryData: $categoryData)
                 case .month:
                     MonthView(tasks: $tasks)
                 }
