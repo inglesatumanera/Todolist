@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TodayView: View {
     @Binding var tasks: [Task]
+    @Binding var categoryData: CategoryManager.CategoryData
     @State private var isPastDueExpanded = true
     @State private var taskToReschedule: Binding<Task>?
     @State private var showingRescheduleSheet = false
@@ -13,7 +14,7 @@ struct TodayView: View {
                 DisclosureGroup(isExpanded: $isPastDueExpanded) {
                     ForEach(pastDueTasks) { task in
                         if let binding = binding(for: task) {
-                            TaskCard(task: binding, allTasks: $tasks)
+                            TaskCard(task: binding, allTasks: $tasks, categoryData: $categoryData)
                                 .contextMenu {
                                     Button {
                                         moveTaskToToday(taskBinding: binding)
@@ -45,7 +46,7 @@ struct TodayView: View {
             Section(header: Text(todayTasks.isEmpty ? "No Tasks Today!" : "Today's Focus")) {
                 ForEach(todayTasks) { task in
                     if let binding = binding(for: task) {
-                        TaskCard(task: binding, allTasks: $tasks)
+                        TaskCard(task: binding, allTasks: $tasks, categoryData: $categoryData)
                     }
                 }
             }

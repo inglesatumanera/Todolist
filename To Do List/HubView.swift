@@ -54,23 +54,6 @@ struct HubView: View {
                     .padding([.horizontal, .bottom])
                 }
                 
-                // Today's Tasks button
-                NavigationLink(destination: TodayView(tasks: $tasks)) {
-                    HStack {
-                        Image(systemName: "checklist.checked")
-                            .foregroundColor(.white)
-                        Text("Today's Tasks")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.blue)
-                    .cornerRadius(12)
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 10)
-                
                 // Grid of Categories
                 LazyVGrid(columns: gridLayout, spacing: 16) {
                     ForEach(categoryData.categories) { category in
