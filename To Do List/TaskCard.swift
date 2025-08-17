@@ -6,14 +6,33 @@ struct TaskCard: View {
     @Binding var categoryData: CategoryManager.CategoryData
 
     var body: some View {
-        // Use a NavigationLink to handle tapping on a project card
-        if task.type == .project {
-            NavigationLink(destination: ProjectDetailView(project: $task)) {
-                cardContent
+        Group {
+            // Use a NavigationLink to handle tapping on a project card
+            if task.type == .project {
+                NavigationLink(destination: ProjectDetailView(project: $task)) {
+                    cardContent
+                }
+            } else {
+                NavigationLink(destination: TaskDetailView(task: $task)) {
+                    cardContent
+                }
             }
-        } else {
-            NavigationLink(destination: TaskDetailView(task: $task)) {
-                cardContent
+        }
+        .contextMenu {
+            if task.status == .todo {
+                Button {
+                    moveTask(to: .inProgress)
+                } label: {
+                    Label("Start Task", systemImage: "play.circle")
+                }
+            }
+
+            if task.status != .completed {
+                Button {
+                    moveTask(to: .completed)
+                } label: {
+                    Label("Complete Task", systemImage: "checkmark.circle")
+                }
             }
         }
     }
