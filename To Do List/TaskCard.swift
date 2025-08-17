@@ -21,7 +21,7 @@ struct TaskCard: View {
         .contextMenu {
             if task.status == .todo {
                 Button {
-                    moveTask(to: .inProgress)
+                    self.moveTask(to: .inProgress)
                 } label: {
                     Label("Start Task", systemImage: "play.circle")
                 }
@@ -29,7 +29,7 @@ struct TaskCard: View {
 
             if task.status != .completed {
                 Button {
-                    moveTask(to: .completed)
+                    self.moveTask(to: .completed)
                 } label: {
                     Label("Complete Task", systemImage: "checkmark.circle")
                 }
