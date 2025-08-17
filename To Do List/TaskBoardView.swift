@@ -9,9 +9,9 @@ struct TaskBoardView: View {
 
     var body: some View {
         TabView {
-            TaskColumn(title: "To-Do", tasks: $tasks, status: .todo, subCategoryID: selectedSubCategory.id)
-            TaskColumn(title: "In Progress", tasks: $tasks, status: .inProgress, subCategoryID: selectedSubCategory.id)
-            TaskColumn(title: "Completed", tasks: $tasks, status: .completed, subCategoryID: selectedSubCategory.id)
+            TaskColumn(title: "To-Do", tasks: $tasks, categoryData: $categoryData, status: .todo, subCategoryID: selectedSubCategory.id)
+            TaskColumn(title: "In Progress", tasks: $tasks, categoryData: $categoryData, status: .inProgress, subCategoryID: selectedSubCategory.id)
+            TaskColumn(title: "Completed", tasks: $tasks, categoryData: $categoryData, status: .completed, subCategoryID: selectedSubCategory.id)
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
         .navigationTitle(selectedSubCategory.name)
