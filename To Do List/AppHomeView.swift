@@ -1,11 +1,19 @@
 import SwiftUI
+import Foundation
+
+// Placeholder views to allow the app to compile
+
+
+
 
 struct AppHomeView: View {
+    // This view should be the source of truth, so we use @State
     @Binding var tasks: [Task]
-    @Binding var categoryData: CategoryManager.CategoryData
+     @Binding var categoryData: CategoryManager.CategoryData
+    @State private var userData: UserData?
+    
     @State private var showingGoalsHub = false
 
-    // Enum to represent the tabs
     enum SelectedTab {
         case today, week, month
     }
@@ -46,12 +54,22 @@ struct AppHomeView: View {
                 }
             }
         }
-        .navigationViewStyle(StackNavigationViewStyle()) // Prevents sidebar on iPad
+        .navigationViewStyle(StackNavigationViewStyle())
         .sheet(isPresented: $showingGoalsHub) {
-            // The HubView will be the "Goals Hub"
-            // It needs to be refactored to use the new data
-            // For now, we pass a placeholder binding
-            HubView(tasks: $tasks, userData: nil, categoryData: $categoryData)
+            // The HubView now receives correct bindings
+            HubView(tasks: $tasks, userData: $userData, categoryData: $categoryData)
+        }
+        .onAppear {
+            self.userData = PersistenceManager.loadUserData()
+        }
+        .onChange(of: tasks) { _ in
+            PersistenceManager.saveTasks(tasks)
+        }
+        .onChange(of: categoryData) { _ in
+            CategoryManager.shared.save(categoryData)
+        }
+        .onChange(of: userData) { _ in
+            PersistenceManager.saveUserData(userData)
         }
     }
 
@@ -77,7 +95,7 @@ struct AppHomeView: View {
                     Color.clear.frame(height: 3)
                 }
             }
-            .contentShape(Rectangle()) // Makes the whole area tappable
+            .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
     }

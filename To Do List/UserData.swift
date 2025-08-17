@@ -1,6 +1,7 @@
 import Foundation
 
-struct UserData: Codable {
-    let name: String
-    let goals: [Goal]
+struct UserData: Identifiable, Codable, Equatable {
+    var id: UUID = UUID()
+    var name: String
+    var goals: [Goal]
 }

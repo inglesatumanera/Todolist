@@ -1,8 +1,12 @@
 import SwiftUI
+import Foundation
+
+// Assuming a UserData struct for demonstration
+
 
 struct HubView: View {
     @Binding var tasks: [Task]
-    var userData: UserData?
+    @Binding var userData: UserData?
     @Binding var categoryData: CategoryManager.CategoryData
     @State private var sheetContext: SheetContext?
     @State private var itemToDelete: Any?
@@ -49,6 +53,23 @@ struct HubView: View {
                     .cornerRadius(12)
                     .padding([.horizontal, .bottom])
                 }
+                
+                // Today's Tasks button
+                NavigationLink(destination: TodayView(tasks: $tasks)) {
+                    HStack {
+                        Image(systemName: "checklist.checked")
+                            .foregroundColor(.white)
+                        Text("Today's Tasks")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.blue)
+                    .cornerRadius(12)
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 10)
                 
                 // Grid of Categories
                 LazyVGrid(columns: gridLayout, spacing: 16) {

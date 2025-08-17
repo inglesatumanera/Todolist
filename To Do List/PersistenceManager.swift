@@ -17,7 +17,7 @@ struct PersistenceManager {
                 return decodedTasks
             }
         }
-        return [] // Return an empty array if loading fails
+        return []
     }
 
     static func saveTasks(_ tasks: [Task]) {
@@ -26,8 +26,8 @@ struct PersistenceManager {
         }
     }
 
-    static func saveUserData(_ userData: UserData) {
-        if let encodedData = try? JSONEncoder().encode(userData) {
+    static func saveUserData(_ userData: UserData?) {
+        if let userData = userData, let encodedData = try? JSONEncoder().encode(userData) {
             try? encodedData.write(to: userFileUrl)
         }
     }

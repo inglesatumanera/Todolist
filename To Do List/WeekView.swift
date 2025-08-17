@@ -83,7 +83,7 @@ struct WeekView: View {
                     .font(.title2)
                     .fontWeight(.bold)
                     .padding(.horizontal)
-
+                
                 if unscheduledTasks.isEmpty {
                     Text("No unscheduled tasks. Great job!")
                         .foregroundColor(.secondary)
@@ -92,9 +92,9 @@ struct WeekView: View {
                     List {
                         ForEach(unscheduledTasks) { task in
                             Text(task.title)
-                                .padding()
                                 .onDrag {
-                                    return NSItemProvider(object: task)
+                                    // The definitive fix for older iOS versions
+                                    return NSItemProvider(item: try! JSONEncoder().encode(task) as NSData, typeIdentifier: "com.ralph-learning.ToDoList.toDoItem")
                                 }
                         }
                     }

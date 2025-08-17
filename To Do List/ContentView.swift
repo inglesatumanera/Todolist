@@ -2,18 +2,19 @@ import SwiftUI
 
 struct ContentView: View {
     @Binding var tasks: [Task]
-    let selectedCategory: TaskCategory
+    @Binding var categoryData: CategoryManager.CategoryData // New: Add this binding
+    let selectedSubCategory: SubCategory
 
     @State private var showingAddTask = false
 
     var body: some View {
         TabView {
-            TaskColumn(title: "To-Do", tasks: $tasks, status: .todo, selectedCategory: selectedCategory)
-            TaskColumn(title: "In Progress", tasks: $tasks, status: .inProgress, selectedCategory: selectedCategory)
-            TaskColumn(title: "Completed", tasks: $tasks, status: .completed, selectedCategory: selectedCategory)
+            TaskColumn(title: "To-Do", tasks: $tasks, status: .todo, subCategoryID: selectedSubCategory.id)
+            TaskColumn(title: "In Progress", tasks: $tasks, status: .inProgress, subCategoryID: selectedSubCategory.id)
+            TaskColumn(title: "Completed", tasks: $tasks, status: .completed, subCategoryID: selectedSubCategory.id)
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
-        .navigationTitle(selectedCategory.rawValue)
+        .navigationTitle(selectedSubCategory.name)
         .toolbar {
             Button(action: {
                 showingAddTask = true
@@ -22,7 +23,11 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showingAddTask) {
-            AddTaskView(tasks: $tasks, selectedCategory: selectedCategory)
+            AddTaskView(
+                tasks: $tasks,
+                categoryData: $categoryData, // New: Pass the categoryData binding
+                selectedSubCategoryID: selectedSubCategory.id
+            )
         }
     }
 }

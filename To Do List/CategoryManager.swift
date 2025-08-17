@@ -4,7 +4,7 @@ class CategoryManager {
     static let shared = CategoryManager()
     private let fileURL: URL
 
-    struct CategoryData: Codable {
+    struct CategoryData: Codable, Equatable {
         var categories: [Category]
         var subCategories: [SubCategory]
     }

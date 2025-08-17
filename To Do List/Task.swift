@@ -1,22 +1,57 @@
-import SwiftUI
+import Foundation
 import UniformTypeIdentifiers
+import CoreTransferable
 
-// Enum to distinguish between a simple task and a project
+
 enum TaskType: Codable, Equatable {
     case simple
     case project
 }
 
+enum TaskCategory: String, CaseIterable, Identifiable, Codable, Equatable {
+    case founderCeo = "Founder/CEO"
+    case technology = "Technology"
+    case youtubeChannel = "YouTube Channel"
+    case tiktokContent = "TikTok Content"
+    case facebookCommunity = "Facebook Community"
+    case personal = "Personal"
+    case healthWellness = "Health & Wellness"
+    case familyEvents = "Family & Events"
+    case sonActivities = "Son's Activities"
+
+    var id: String { self.rawValue }
+
+    var parent: ParentCategory {
+        switch self {
+        case .founderCeo, .technology, .youtubeChannel, .tiktokContent, .facebookCommunity:
+            return .business
+        case .personal, .healthWellness:
+            return .personal
+        case .familyEvents, .sonActivities:
+            return .family
+        }
+    }
+}
+
+enum ParentCategory: String, CaseIterable, Identifiable, Codable, Equatable {
+    case business = "Business"
+    case personal = "Personal"
+    case home = "Home"
+    case family = "Family"
+    
+    var id: String { self.rawValue }
+}
 
 struct Task: Identifiable, Codable, Equatable {
     let id = UUID()
     var title: String
-    var type: TaskType // New
+    var type: TaskType
     var status: TaskStatus
-    var subCategoryID: UUID?
+    var category: TaskCategory // Retain for compatibility
+    var subCategoryID: UUID? // Your new property
     var dueDate: Date?
-    var subtasks: [Task]? // New: An optional array of sub-tasks
-    var completionDate: Date?
+    var subtasks: [Task]?
+    var completionDate: Date? // Your new property
 }
 
 enum TaskStatus: Codable, Equatable {
