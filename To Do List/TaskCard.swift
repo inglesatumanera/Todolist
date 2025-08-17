@@ -7,7 +7,6 @@ struct TaskCard: View {
 
     var body: some View {
         Group {
-            // Use a NavigationLink to handle tapping on a project card
             if task.type == .project {
                 NavigationLink(destination: ProjectDetailView(project: $task)) {
                     cardContent
@@ -38,55 +37,58 @@ struct TaskCard: View {
     }
 
     private var cardContent: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 12) {
             Rectangle()
-                .fill(categoryColor)
+                .fill(self.categoryColor)
                 .frame(width: 5)
+                .cornerRadius(2.5) // Optional: to make the bar's ends rounded
+                .padding(.leading, -5) // Adjust padding to keep alignment clean
 
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text(task.title)
                         .font(.headline)
-                    .lineLimit(2)
-                Spacer()
-                if task.type == .project {
-                    Image(systemName: "folder")
-                        .foregroundColor(.blue)
-                }
-            }
-
-            HStack {
-                if let dueDate = task.dueDate {
-                    HStack(spacing: 4) {
-                        Image(systemName: "calendar")
-                            .foregroundColor(dueDateColor(for: dueDate))
-                        Text(formattedDate(for: dueDate))
-                            .font(.caption)
-                            .foregroundColor(dueDateColor(for: dueDate))
+                        .lineLimit(2)
+                    Spacer()
+                    if task.type == .project {
+                        Image(systemName: "folder")
+                            .foregroundColor(.blue)
                     }
                 }
-                Spacer()
-                
-                Menu {
-                    Button("To-Do") { moveTask(to: .todo) }
-                    Button("In Progress") { moveTask(to: .inProgress) }
-                    Button("Completed") { moveTask(to: .completed) }
-                } label: {
-                    Text(statusLabel)
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(statusColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
+
+                HStack {
+                    if let dueDate = task.dueDate {
+                        HStack(spacing: 4) {
+                            Image(systemName: "calendar")
+                                .foregroundColor(self.dueDateColor(for: dueDate))
+                            Text(self.formattedDate(for: dueDate))
+                                .font(.caption)
+                                .foregroundColor(self.dueDateColor(for: dueDate))
+                        }
+                    }
+                    Spacer()
+
+                    Menu {
+                        Button("To-Do") { self.moveTask(to: .todo) }
+                        Button("In Progress") { self.moveTask(to: .inProgress) }
+                        Button("Completed") { self.moveTask(to: .completed) }
+                    } label: {
+                        Text(self.statusLabel)
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(self.statusColor)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
                 }
             }
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white)
+        .background(Color(.systemBackground)) // Use system background for light/dark mode adaptability
         .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
     }
 
     private var categoryColor: Color {
@@ -99,13 +101,27 @@ struct TaskCard: View {
     }
 
     func moveTask(to newStatus: TaskStatus) {
-        if let index = allTasks.firstIndex(where: { $0.id == task.id }) {
-            allTasks[index].status = newStatus
+        // Find the index of the root task
+        if let rootIndex = allTasks.firstIndex(where: { $0.id == task.id }) {
+            allTasks[rootIndex].status = newStatus
             if newStatus == .completed {
-                allTasks[index].completionDate = Date()
+                allTasks[rootIndex].completionDate = Date()
             } else {
-                // Optional: Clear the completion date if moved out of completed
-                allTasks[index].completionDate = nil
+                allTasks[rootIndex].completionDate = nil
+            }
+            return
+        }
+
+        // Find the index of the subtask if the root task isn't found
+        for i in allTasks.indices {
+            if let subtaskIndex = allTasks[i].subtasks?.firstIndex(where: { $0.id == task.id }) {
+                allTasks[i].subtasks?[subtaskIndex].status = newStatus
+                if newStatus == .completed {
+                    allTasks[i].subtasks?[subtaskIndex].completionDate = Date()
+                } else {
+                    allTasks[i].subtasks?[subtaskIndex].completionDate = nil
+                }
+                return
             }
         }
     }
