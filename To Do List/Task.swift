@@ -52,6 +52,7 @@ struct Task: Identifiable, Codable, Equatable {
     var dueDate: Date?
     var subtasks: [Task]?
     var completionDate: Date? // Your new property
+    var details: String?
 }
 
 enum TaskStatus: Codable, Equatable {

@@ -3,6 +3,7 @@ import SwiftUI
 struct TaskCard: View {
     @Binding var task: Task
     @Binding var allTasks: [Task]
+    @Binding var categoryData: CategoryManager.CategoryData
 
     var body: some View {
         // Use a NavigationLink to handle tapping on a project card
@@ -11,15 +12,22 @@ struct TaskCard: View {
                 cardContent
             }
         } else {
-            cardContent
+            NavigationLink(destination: TaskDetailView(task: $task)) {
+                cardContent
+            }
         }
     }
 
     private var cardContent: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(task.title)
-                    .font(.headline)
+        HStack(spacing: 0) {
+            Rectangle()
+                .fill(categoryColor)
+                .frame(width: 5)
+
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(task.title)
+                        .font(.headline)
                     .lineLimit(2)
                 Spacer()
                 if task.type == .project {
@@ -60,6 +68,15 @@ struct TaskCard: View {
         .background(Color.white)
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+    }
+
+    private var categoryColor: Color {
+        guard let subCategoryID = task.subCategoryID,
+              let subCategory = categoryData.subCategories.first(where: { $0.id == subCategoryID }),
+              let category = categoryData.categories.first(where: { $0.id == subCategory.parentCategoryID }) else {
+            return .gray // Default color
+        }
+        return category.color
     }
 
     func moveTask(to newStatus: TaskStatus) {

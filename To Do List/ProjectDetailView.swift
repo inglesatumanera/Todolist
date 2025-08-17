@@ -6,6 +6,12 @@ struct ProjectDetailView: View {
 
     var body: some View {
         List {
+            Section {
+                NavigationLink(destination: TaskDetailView(task: $project)) {
+                    Text("Edit Project Details")
+                }
+            }
+
             Section(header: Text("Sub-Tasks")) {
                 if project.subtasks?.isEmpty ?? true {
                     Text("No sub-tasks yet. Tap the '+' to add one.")
