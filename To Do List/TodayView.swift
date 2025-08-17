@@ -42,6 +42,17 @@ struct TodayView: View {
                 }
             }
 
+            // In Progress Section
+            if !inProgressTasks.isEmpty {
+                Section(header: Text("In Progress")) {
+                    ForEach(inProgressTasks) { task in
+                        if let binding = binding(for: task) {
+                            TaskCard(task: binding, allTasks: $tasks, categoryData: $categoryData)
+                        }
+                    }
+                }
+            }
+
             // Today's Tasks Section
             Section(header: Text(todayTasks.isEmpty ? "No Tasks Today!" : "Today's Focus")) {
                 ForEach(todayTasks) { task in
@@ -96,17 +107,24 @@ struct TodayView: View {
         return all
     }
 
+    private var inProgressTasks: [Task] {
+        allTasksAndSubtasks().filter { task in
+            guard let dueDate = task.dueDate else { return false }
+            return Calendar.current.isDateInToday(dueDate) && task.status == .inProgress
+        }
+    }
+
     private var todayTasks: [Task] {
         allTasksAndSubtasks().filter { task in
             guard let dueDate = task.dueDate else { return false }
-            return Calendar.current.isDateInToday(dueDate) && task.status != .completed
+            return Calendar.current.isDateInToday(dueDate) && task.status == .todo
         }
     }
 
     private var pastDueTasks: [Task] {
         allTasksAndSubtasks().filter { task in
             guard let dueDate = task.dueDate else { return false }
-            return dueDate < Date() && !Calendar.current.isDateInToday(dueDate) && task.status != .completed
+            return dueDate < Date() && !Calendar.current.isDateInToday(dueDate) && task.status == .todo
         }
     }
     
