@@ -16,12 +16,14 @@ struct HubView: View {
         case add
         case editCategory(Category)
         case editSubCategory(SubCategory)
+        case editGoal(Goal)
 
         var id: String {
             switch self {
             case .add: return "add"
             case .editCategory(let category): return "edit-cat-\(category.id)"
             case .editSubCategory(let subCategory): return "edit-sub-\(subCategory.id)"
+            case .editGoal(let goal): return "edit-goal-\(goal.id)"
             }
         }
     }
@@ -38,20 +40,24 @@ struct HubView: View {
                         Text("Hello, \(userData.name)!")
                             .font(.largeTitle)
                             .bold()
-                            .padding(.bottom, 5)
+                            .padding([.leading, .top])
                         Text("Your Goals:")
-                            .font(.headline)
-                        ForEach(userData.goals) { goal in
-                            Text("• \(goal.title)")
-                                .font(.body)
-                                .padding(.leading, 8)
-                        }
+                            .font(.title2).bold()
+                            .padding(.leading)
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(12)
-                    .padding([.horizontal, .bottom])
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 20) {
+                            ForEach(userData.goals.prefix(3)) { goal in
+                                GoalCardView(goal: goal, progress: progress(for: goal))
+                                    .frame(width: 250, height: 250)
+                                    .onTapGesture {
+                                        self.sheetContext = .editGoal(goal)
+                                    }
+                            }
+                        }
+                        .padding()
+                    }
                 }
                 
                 // Grid of Categories
@@ -100,6 +106,10 @@ struct HubView: View {
                 EditCategoryView(categoryData: $categoryData, categoryToEdit: category)
             case .editSubCategory(let subCategory):
                 EditCategoryView(categoryData: $categoryData, subCategoryToEdit: subCategory)
+            case .editGoal(let goal):
+                if let index = userData?.goals.firstIndex(where: { $0.id == goal.id }) {
+                    EditGoalView(goal: $userData.unsafelyUnwrapped.goals[index], categoryData: categoryData)
+                }
             }
         }
         .alert("Are you sure?", isPresented: $showingDeleteAlert) {
@@ -126,5 +136,26 @@ struct HubView: View {
     private func delete(subCategory: SubCategory) {
         categoryData.subCategories.removeAll { $0.id == subCategory.id }
         CategoryManager.shared.save(categoryData)
+    }
+
+    private func progress(for goal: Goal) -> Double {
+        guard let categoryID = goal.linkedCategoryID else { return 0.0 }
+
+        // Find all subcategories for the linked parent category
+        let subCategoryIDs = categoryData.subCategories.filter { $0.parentCategoryID == categoryID }.map { $0.id }
+
+        // Find all tasks associated with those subcategories
+        let relevantTasks = tasks.filter { task in
+            guard let taskSubCategoryID = task.subCategoryID else { return false }
+            return subCategoryIDs.contains(taskSubCategoryID)
+        }
+
+        if relevantTasks.isEmpty {
+            return 0.0
+        }
+
+        let completedTasks = relevantTasks.filter { $0.status == .completed }
+
+        return Double(completedTasks.count) / Double(relevantTasks.count)
     }
 }
