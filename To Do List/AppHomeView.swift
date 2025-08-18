@@ -65,13 +65,13 @@ struct AppHomeView: View {
         .onAppear {
             self.userData = PersistenceManager.loadUserData()
         }
-        .onChange(of: tasks) { _ in
+        .onChange(of: tasks) {
             PersistenceManager.saveTasks(tasks)
         }
-        .onChange(of: categoryData) { _ in
+        .onChange(of: categoryData) {
             CategoryManager.shared.save(categoryData)
         }
-        .onChange(of: userData) { _ in
+        .onChange(of: userData) {
             PersistenceManager.saveUserData(userData)
         }
     }

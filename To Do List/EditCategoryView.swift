@@ -40,7 +40,7 @@ struct EditCategoryView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                    .onChange(of: creationType) { _ in
+                    .onChange(of: creationType) {
                         // Set a default parent if switching to sub-category and one doesn't exist
                         if creationType == .subCategory && selectedParentID == nil {
                             selectedParentID = categoryData.categories.first?.id
