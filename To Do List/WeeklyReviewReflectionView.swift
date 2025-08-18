@@ -31,7 +31,7 @@ struct WeeklyReviewReflectionView: View {
         .onAppear {
             self.weeklyReview = WeeklyReviewManager.shared.load(for: date)
         }
-        .onChange(of: weeklyReview) { newValue in
+        .onChange(of: weeklyReview) { _, newValue in
             WeeklyReviewManager.shared.save(newValue, for: date)
         }
     }

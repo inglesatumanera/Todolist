@@ -22,7 +22,7 @@ struct WeeklyFocusView: View {
         .onAppear {
             self.weeklyFocus = WeeklyFocusManager.shared.load(for: date)
         }
-        .onChange(of: weeklyFocus) { newValue in
+        .onChange(of: weeklyFocus) { _, newValue in
             WeeklyFocusManager.shared.save(newValue, for: date)
         }
     }
