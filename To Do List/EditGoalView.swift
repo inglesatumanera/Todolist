@@ -52,23 +52,15 @@ struct EditGoalView: View {
                     }
                 }
             }
-            .onChange(of: selectedItem) { _, newItem in
-                Task {
-                    await loadImage(from: newItem)
+            .task(id: selectedItem) {
+                do {
+                    guard let item = selectedItem else { return }
+                    let data = try await item.loadTransferable(type: Data.self)
+                    goal.imageData = data
+                } catch {
+                    print("Failed to load image: \(error)")
                 }
             }
-        }
-    }
-
-    private func loadImage(from item: PhotosPickerItem?) async {
-        do {
-            guard let item = item else { return }
-            let data = try await item.loadTransferable(type: Data.self)
-            await MainActor.run {
-                goal.imageData = data
-            }
-        } catch {
-            print("Failed to load image: \(error)")
         }
     }
 }
