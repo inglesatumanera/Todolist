@@ -95,7 +95,7 @@ struct HubView: View {
                 }
             }
         }
-        .onChange(of: tasks) { _ in
+        .onChange(of: tasks) {
             PersistenceManager.saveTasks(tasks)
         }
         .sheet(item: $sheetContext) { context in
