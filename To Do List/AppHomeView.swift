@@ -15,7 +15,7 @@ struct AppHomeView: View {
     @State private var showingGoalsHub = false
 
     enum SelectedTab {
-        case today, week, month
+        case today, week, month, completed
     }
 
     @State private var selectedTab: SelectedTab = .today
@@ -29,6 +29,7 @@ struct AppHomeView: View {
                     tabButton(title: "Today", tab: .today)
                     tabButton(title: "Week", tab: .week)
                     tabButton(title: "Month", tab: .month)
+                    tabButton(title: "Completed", tab: .completed)
                 }
                 .padding(.horizontal)
                 .frame(height: 50)
@@ -43,6 +44,8 @@ struct AppHomeView: View {
                     WeekView(tasks: $tasks, categoryData: $categoryData)
                 case .month:
                     MonthView(tasks: $tasks)
+                case .completed:
+                    CompletedTasksView(tasks: $tasks, categoryData: $categoryData)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
