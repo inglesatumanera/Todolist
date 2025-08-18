@@ -20,7 +20,7 @@ struct MonthlyThemeView: View {
         .onAppear {
             self.monthlyTheme = MonthlyThemeManager.shared.load(for: date)
         }
-        .onChange(of: monthlyTheme) { newValue in
+        .onChange(of: monthlyTheme) { _, newValue in
             MonthlyThemeManager.shared.save(newValue, for: date)
         }
     }
