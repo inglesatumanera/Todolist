@@ -108,7 +108,11 @@ struct HubView: View {
                 EditCategoryView(categoryData: $categoryData, subCategoryToEdit: subCategory)
             case .editGoal(let goal):
                 if let index = userData?.goals.firstIndex(where: { $0.id == goal.id }) {
-                    EditGoalView(goal: $userData.unsafelyUnwrapped.goals[index], categoryData: categoryData)
+                    let goalBinding = Binding<Goal>(
+                        get: { self.userData!.goals[index] },
+                        set: { self.userData!.goals[index] = $0 }
+                    )
+                    EditGoalView(goal: goalBinding, categoryData: categoryData)
                 }
             }
         }
