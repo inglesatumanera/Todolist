@@ -14,50 +14,34 @@ struct AppHomeView: View {
     
     @State private var showingGoalsHub = false
 
-    enum SelectedTab {
-        case today, week, month, completed
-    }
-
-    @State private var selectedTab: SelectedTab = .today
-    @Namespace private var topTabNamespace
-
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                // Custom Top Tab Bar
-                HStack(spacing: 20) {
-                    tabButton(title: "Today", tab: .today)
-                    tabButton(title: "Week", tab: .week)
-                    tabButton(title: "Month", tab: .month)
-                    tabButton(title: "Completed", tab: .completed)
+        TabView {
+            RoutinesView()
+                .tabItem {
+                    Label("Routines", systemImage: "arrow.triangle.2.circlepath")
                 }
-                .padding(.horizontal)
-                .frame(height: 50)
-                .background(Color(.systemBackground))
-                .shadow(radius: 2)
 
-                // View Content
-                switch selectedTab {
-                case .today:
-                    TodayView(tasks: $tasks, categoryData: $categoryData)
-                case .week:
-                    WeekView(tasks: $tasks, categoryData: $categoryData)
-                case .month:
-                    MonthView(tasks: $tasks)
-                case .completed:
-                    CompletedTasksView(tasks: $tasks, categoryData: $categoryData)
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingGoalsHub = true }) {
-                        Image(systemName: "square.grid.2x2")
+            NavigationView {
+                TodayView(tasks: $tasks, categoryData: $categoryData)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button(action: { showingGoalsHub = true }) {
+                                Image(systemName: "square.grid.2x2")
+                            }
+                        }
                     }
-                }
             }
+            .navigationViewStyle(StackNavigationViewStyle())
+            .tabItem {
+                Label("To-Do", systemImage: "list.bullet")
+            }
+
+            HealthView()
+                .tabItem {
+                    Label("Health", systemImage: "heart.fill")
+                }
         }
-        .navigationViewStyle(StackNavigationViewStyle())
         .sheet(isPresented: $showingGoalsHub) {
             // The HubView now receives correct bindings
             HubView(tasks: $tasks, userData: $userData, categoryData: $categoryData)
@@ -74,32 +58,5 @@ struct AppHomeView: View {
         .onChange(of: userData) {
             PersistenceManager.saveUserData(userData)
         }
-    }
-
-    // Reusable button view for the tab bar
-    private func tabButton(title: String, tab: SelectedTab) -> some View {
-        Button(action: {
-            withAnimation(.spring()) {
-                selectedTab = tab
-            }
-        }) {
-            VStack(spacing: 8) {
-                Text(title)
-                    .font(.headline)
-                    .fontWeight(selectedTab == tab ? .bold : .regular)
-                    .foregroundColor(selectedTab == tab ? .primary : .secondary)
-
-                if selectedTab == tab {
-                    Rectangle()
-                        .frame(height: 3)
-                        .foregroundColor(.blue)
-                        .matchedGeometryEffect(id: "underline", in: topTabNamespace)
-                } else {
-                    Color.clear.frame(height: 3)
-                }
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(PlainButtonStyle())
     }
 }
