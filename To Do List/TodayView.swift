@@ -6,6 +6,8 @@ struct TodayView: View {
     @State private var isPastDueExpanded = true
     @State private var taskToReschedule: Binding<Task>?
     @State private var showingRescheduleSheet = false
+    @State private var showingDeleteAlert = false
+    @State private var taskToDelete: Task?
 
     var body: some View {
         List {
@@ -29,6 +31,14 @@ struct TodayView: View {
                                         Label("Reschedule", systemImage: "calendar.badge.plus")
                                     }
                                 }
+                                .swipeActions {
+                                    Button(role: .destructive) {
+                                        taskToDelete = task
+                                        showingDeleteAlert = true
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                         }
                     }
                 } label: {
@@ -48,6 +58,14 @@ struct TodayView: View {
                     ForEach(inProgressTasks) { task in
                         if let binding = binding(for: task) {
                             TaskCard(task: binding, allTasks: $tasks, categoryData: $categoryData)
+                                .swipeActions {
+                                    Button(role: .destructive) {
+                                        taskToDelete = task
+                                        showingDeleteAlert = true
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                         }
                     }
                 }
@@ -58,6 +76,14 @@ struct TodayView: View {
                 ForEach(todayTasks) { task in
                     if let binding = binding(for: task) {
                         TaskCard(task: binding, allTasks: $tasks, categoryData: $categoryData)
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    taskToDelete = task
+                                    showingDeleteAlert = true
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                     }
                 }
             }
@@ -67,6 +93,22 @@ struct TodayView: View {
             if let taskBinding = taskToReschedule {
                 RescheduleView(task: taskBinding)
             }
+        }
+        .alert("Confirm Deletion", isPresented: $showingDeleteAlert, presenting: taskToDelete) { task in
+            Button("Delete", role: .destructive) {
+                delete(task: task)
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: { task in
+            Text("Are you sure you want to permanently delete this task? This action cannot be undone.")
+        }
+    }
+
+    private func delete(task: Task) {
+        tasks.removeAll { $0.id == task.id }
+        // also need to check subtasks
+        for i in 0..<tasks.count {
+            tasks[i].subtasks?.removeAll { $0.id == task.id }
         }
     }
 
