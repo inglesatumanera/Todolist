@@ -22,7 +22,7 @@ struct AppHomeView: View {
                 }
 
             NavigationView {
-                TodayView(tasks: $tasks, categoryData: $categoryData)
+                ToDoContainerView(tasks: $tasks, categoryData: $categoryData)
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .navigationBarTrailing) {
