@@ -3,6 +3,12 @@ import SwiftUI
 struct WeeklyFocusView: View {
     let date: Date
     @State private var weeklyFocus = WeeklyFocus()
+    @FocusState private var focusedField: FocusableField?
+
+    enum FocusableField: Hashable {
+        case goal1
+        case goal2
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -12,8 +18,35 @@ struct WeeklyFocusView: View {
                 .padding(.horizontal)
 
             VStack(spacing: 8) {
-                TextEditorWithPlaceholder(text: $weeklyFocus.goal1, placeholder: "What is your most important goal this week?")
-                TextEditorWithPlaceholder(text: $weeklyFocus.goal2, placeholder: "What is your second most important goal?")
+                ZStack(alignment: .topLeading) {
+                    if weeklyFocus.goal1.isEmpty {
+                        Text("What is your most important goal this week?")
+                            .foregroundColor(Color.secondary.opacity(0.7))
+                            .padding(.top, 8)
+                            .padding(.leading, 5)
+                    }
+                    TextEditor(text: $weeklyFocus.goal1)
+                        .frame(height: 60)
+                        .focused($focusedField, equals: .goal1)
+                }
+                .padding(4)
+                .background(Color(.systemBackground))
+                .cornerRadius(10)
+
+                ZStack(alignment: .topLeading) {
+                    if weeklyFocus.goal2.isEmpty {
+                        Text("What is your second most important goal?")
+                            .foregroundColor(Color.secondary.opacity(0.7))
+                            .padding(.top, 8)
+                            .padding(.leading, 5)
+                    }
+                    TextEditor(text: $weeklyFocus.goal2)
+                        .frame(height: 60)
+                        .focused($focusedField, equals: .goal2)
+                }
+                .padding(4)
+                .background(Color(.systemBackground))
+                .cornerRadius(10)
             }
         }
         .padding()
@@ -24,6 +57,14 @@ struct WeeklyFocusView: View {
         }
         .onChange(of: weeklyFocus) { _, newValue in
             WeeklyFocusManager.shared.save(newValue, for: date)
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    focusedField = nil
+                }
+            }
         }
     }
 }
