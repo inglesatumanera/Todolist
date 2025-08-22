@@ -64,4 +64,24 @@ struct PersistenceManager {
             try? encodedData.write(to: routinesFileUrl)
         }
     }
+
+    static private var healthLogsFileUrl: URL {
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return documentsDirectory.appendingPathComponent("healthLogs.json")
+    }
+
+    static func loadHealthLogs() -> [HealthLog] {
+        if let data = try? Data(contentsOf: healthLogsFileUrl) {
+            if let decodedHealthLogs = try? JSONDecoder().decode([HealthLog].self, from: data) {
+                return decodedHealthLogs
+            }
+        }
+        return []
+    }
+
+    static func saveHealthLogs(_ healthLogs: [HealthLog]) {
+        if let encodedData = try? JSONEncoder().encode(healthLogs) {
+            try? encodedData.write(to: healthLogsFileUrl)
+        }
+    }
 }
