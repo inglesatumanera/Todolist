@@ -21,6 +21,11 @@ struct To_Do_ListApp: App {
             } else {
                 // Pass data down to the new AppHomeView
                 AppHomeView(tasks: $tasks, categoryData: $categoryData)
+                    .onAppear {
+                        NotificationManager.shared.requestAuthorization()
+                        NotificationManager.shared.scheduleHourlyReminders()
+                        NotificationManager.shared.scheduleDailyMotivationalMoments()
+                    }
             }
         }
     }

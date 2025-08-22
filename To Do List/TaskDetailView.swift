@@ -31,9 +31,13 @@ struct TaskDetailView: View {
             }
         }
         .navigationTitle("Edit Task")
-        .navigationBarItems(trailing: Button("Save") {
-            // The binding will automatically update the source task
-            presentationMode.wrappedValue.dismiss()
-        })
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Save") {
+                    NotificationManager.shared.scheduleTaskReminder(task: task)
+                    presentationMode.wrappedValue.dismiss()
+                }
+            }
+        }
     }
 }

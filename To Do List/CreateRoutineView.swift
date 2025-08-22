@@ -8,6 +8,8 @@ struct CreateRoutineView: View {
     @State private var name: String = ""
     @State private var icon: String = "list.bullet"
     @State private var steps: [RoutineStep] = []
+    @State private var scheduledTime: Date = Date()
+    @State private var hasScheduledTime: Bool = false
 
     var body: some View {
         NavigationView {
@@ -15,6 +17,13 @@ struct CreateRoutineView: View {
                 Section(header: Text("Routine Details")) {
                     TextField("Routine Name", text: $name)
                     TextField("Icon Name (SF Symbol)", text: $icon)
+                }
+
+                Section(header: Text("Scheduled Time")) {
+                    Toggle("Schedule Routine", isOn: $hasScheduledTime)
+                    if hasScheduledTime {
+                        DatePicker("Time", selection: $scheduledTime, displayedComponents: .hourAndMinute)
+                    }
                 }
 
                 Section(header: Text("Steps")) {
@@ -52,6 +61,10 @@ struct CreateRoutineView: View {
                     name = routine.name
                     icon = routine.icon
                     steps = routine.steps
+                    if let time = routine.scheduledTime {
+                        scheduledTime = time
+                        hasScheduledTime = true
+                    }
                 }
             }
         }
@@ -81,6 +94,8 @@ struct CreateRoutineView: View {
             // Creating new routine
             routineToSave = Routine(id: UUID(), name: name, icon: icon, steps: steps)
         }
+        routineToSave.scheduledTime = hasScheduledTime ? scheduledTime : nil
         onSave(routineToSave)
+        NotificationManager.shared.scheduleRoutineReminder(routine: routineToSave)
     }
 }

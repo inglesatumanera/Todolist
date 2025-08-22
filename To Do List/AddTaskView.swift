@@ -78,5 +78,6 @@ struct AddTaskView: View {
             subtasks: taskType == .project ? [] : nil
         )
         tasks.append(newTask)
+        NotificationManager.shared.scheduleTaskReminder(task: newTask)
     }
 }

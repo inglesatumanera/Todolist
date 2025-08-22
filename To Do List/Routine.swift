@@ -7,4 +7,5 @@ struct Routine: Identifiable, Codable, Equatable {
     var steps: [RoutineStep]
     var streakCount: Int = 0
     var lastCompletionDate: Date?
+    var scheduledTime: Date?
 }

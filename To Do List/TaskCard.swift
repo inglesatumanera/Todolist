@@ -4,6 +4,7 @@ struct TaskCard: View {
     @Binding var task: Task
     @Binding var allTasks: [Task]
     @Binding var categoryData: CategoryManager.CategoryData
+    @State private var showingTimerSetup = false
 
     var body: some View {
         Group {
@@ -34,6 +35,9 @@ struct TaskCard: View {
                 }
             }
         }
+        .sheet(isPresented: $showingTimerSetup) {
+            TimerSetupView(task: task)
+        }
     }
 
     private var cardContent: some View {
@@ -41,8 +45,8 @@ struct TaskCard: View {
             Rectangle()
                 .fill(self.categoryColor)
                 .frame(width: 5)
-                .cornerRadius(2.5) // Optional: to make the bar's ends rounded
-                .padding(.leading, -5) // Adjust padding to keep alignment clean
+                .cornerRadius(2.5)
+                .padding(.leading, -5)
 
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -68,6 +72,16 @@ struct TaskCard: View {
                     }
                     Spacer()
 
+                    if task.status == .inProgress {
+                        Button(action: { showingTimerSetup = true }) {
+                            Image(systemName: "timer")
+                                .font(.caption)
+                                .padding(4)
+                                .background(Color.blue.opacity(0.2))
+                                .cornerRadius(4)
+                        }
+                    }
+
                     Menu {
                         Button("To-Do") { self.moveTask(to: .todo) }
                         Button("In Progress") { self.moveTask(to: .inProgress) }
@@ -86,7 +100,7 @@ struct TaskCard: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.systemBackground)) // Use system background for light/dark mode adaptability
+        .background(Color(.systemBackground))
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
     }
@@ -95,13 +109,12 @@ struct TaskCard: View {
         guard let subCategoryID = task.subCategoryID,
               let subCategory = categoryData.subCategories.first(where: { $0.id == subCategoryID }),
               let category = categoryData.categories.first(where: { $0.id == subCategory.parentCategoryID }) else {
-            return .gray // Default color
+            return .gray
         }
         return category.color
     }
 
     func moveTask(to newStatus: TaskStatus) {
-        // Find the index of the root task
         if let rootIndex = allTasks.firstIndex(where: { $0.id == task.id }) {
             allTasks[rootIndex].status = newStatus
             if newStatus == .completed {
@@ -112,7 +125,6 @@ struct TaskCard: View {
             return
         }
 
-        // Find the index of the subtask if the root task isn't found
         for i in allTasks.indices {
             if let subtaskIndex = allTasks[i].subtasks?.firstIndex(where: { $0.id == task.id }) {
                 allTasks[i].subtasks?[subtaskIndex].status = newStatus
