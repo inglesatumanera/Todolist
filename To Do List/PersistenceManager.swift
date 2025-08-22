@@ -44,4 +44,24 @@ struct PersistenceManager {
     static func isOnboardingComplete() -> Bool {
         return FileManager.default.fileExists(atPath: userFileUrl.path)
     }
+
+    static private var routinesFileUrl: URL {
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return documentsDirectory.appendingPathComponent("routines.json")
+    }
+
+    static func loadRoutines() -> [Routine] {
+        if let data = try? Data(contentsOf: routinesFileUrl) {
+            if let decodedRoutines = try? JSONDecoder().decode([Routine].self, from: data) {
+                return decodedRoutines
+            }
+        }
+        return []
+    }
+
+    static func saveRoutines(_ routines: [Routine]) {
+        if let encodedData = try? JSONEncoder().encode(routines) {
+            try? encodedData.write(to: routinesFileUrl)
+        }
+    }
 }
