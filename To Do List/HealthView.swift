@@ -6,6 +6,8 @@ struct HealthView: View {
     @State private var showingMindfulnessEntry = false
     @State private var showingCreateHabit = false
     @State private var showingRingSwap = false
+    @State private var showingSetGoals = false
+    @State private var showingAddFood = false
     @State private var editingRingPosition: RingPosition?
 
     enum RingPosition: String {
@@ -29,6 +31,46 @@ struct HealthView: View {
                     }
                     .padding()
 
+                    // Nutrition Section
+                    VStack {
+                        // Calorie Ring
+                        ProgressRingView(
+                            progress: Double(viewModel.dailyLog.caloriesConsumed) / Double(viewModel.dailyLog.calorieGoal),
+                            color: .green,
+                            icon: "flame.fill"
+                        )
+                        .onTapGesture { showingAddFood = true }
+
+                        Text("\(viewModel.dailyLog.caloriesConsumed) / \(viewModel.dailyLog.calorieGoal) kcal")
+                            .font(.caption)
+
+                        // Macro KPIs
+                        HStack(spacing: 20) {
+                            VStack {
+                                Text("Protein")
+                                Text("\(Int(viewModel.dailyLog.totalProtein)) / \(viewModel.dailyLog.proteinGoal) g")
+                            }
+                            VStack {
+                                Text("Carbs")
+                                Text("\(Int(viewModel.dailyLog.totalCarbs)) / \(viewModel.dailyLog.carbsGoal) g")
+                            }
+                            VStack {
+                                Text("Fat")
+                                Text("\(Int(viewModel.dailyLog.totalFat)) / \(viewModel.dailyLog.fatGoal) g")
+                            }
+                        }
+                        .padding(.top)
+
+                        // Current Weight
+                        Text("Weight: \(String(format: "%.1f", viewModel.dailyLog.currentWeight)) kg")
+                            .padding(.top)
+
+                    }
+                    .padding()
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(10)
+
+
                     // Habit List
                     VStack(alignment: .leading) {
                         HStack {
@@ -50,6 +92,25 @@ struct HealthView: View {
                         .frame(height: 200) // Temporary fixed height
                     }
 
+                    // Food Log
+                    VStack(alignment: .leading) {
+                        Text("Today's Food")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .padding(.horizontal)
+
+                        List {
+                            ForEach(viewModel.dailyLog.foodLog) { food in
+                                HStack {
+                                    Text(food.name)
+                                    Spacer()
+                                    Text("\(food.calories) kcal")
+                                }
+                            }
+                        }
+                        .frame(height: 200) // Temporary fixed height
+                    }
+
                     Section {
                         NavigationLink(destination: InsightsView()) {
                             Text("View Your Insights")
@@ -58,6 +119,18 @@ struct HealthView: View {
                 }
             }
             .navigationTitle("Health Hub")
+            .navigationBarItems(trailing: Button("Set Goals") {
+                showingSetGoals = true
+            })
+            .sheet(isPresented: $showingSetGoals) {
+                SetGoalsView(dailyLog: $viewModel.dailyLog)
+                    .onDisappear(perform: viewModel.updateLog)
+            }
+            .sheet(isPresented: $showingAddFood) {
+                AddFoodView { newFood in
+                    viewModel.addFoodItem(newFood)
+                }
+            }
             .sheet(isPresented: $showingCreateHabit) {
                 CreateHabitView { newHabit in
                     viewModel.addHabit(habit: newHabit)

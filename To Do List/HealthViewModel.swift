@@ -35,4 +35,9 @@ class HealthViewModel: ObservableObject {
         healthDataManager.assignHabit(habit.id, to: ringIdentifier)
         self.ringAssignments = healthDataManager.getRingAssignments()
     }
+
+    func addFoodItem(_ foodItem: FoodItem) {
+        dailyLog.foodLog.append(foodItem)
+        updateLog()
+    }
 }
