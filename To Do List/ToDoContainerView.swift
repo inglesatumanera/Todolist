@@ -36,6 +36,7 @@ struct ToDoContainerView: View {
             case .completed:
                 CompletedTasksView(tasks: $tasks, categoryData: $categoryData)
             }
+            Spacer()
         }
     }
 

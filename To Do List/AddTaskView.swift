@@ -78,6 +78,19 @@ struct AddTaskView: View {
             subtasks: taskType == .project ? [] : nil
         )
         tasks.append(newTask)
-        NotificationManager.shared.scheduleTaskReminder(task: newTask)
+
+        // Debugging Notifications
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            print("Notification settings: \(settings)")
+            if settings.authorizationStatus == .authorized {
+                if let dueDate = newTask.dueDate {
+                    let triggerDate = dueDate.addingTimeInterval(-600)
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                    print("Scheduling notification for task '\(newTask.title)' at: \(formatter.string(from: triggerDate))")
+                }
+                NotificationManager.shared.scheduleTaskReminder(task: newTask)
+            }
+        }
     }
 }

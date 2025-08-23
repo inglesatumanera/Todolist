@@ -9,49 +9,69 @@ struct GuidedRoutineView: View {
     @State private var currentStepIndex = 0
     @State private var timer: AnyCancellable?
     @State private var remainingTime: Int = 0
+    @State private var showingExitAlert = false
 
     var body: some View {
-        VStack {
-            if currentStepIndex < routine.steps.count {
-                let currentStep = routine.steps[currentStepIndex]
+        NavigationView {
+            VStack {
+                if currentStepIndex < routine.steps.count {
+                    let currentStep = routine.steps[currentStepIndex]
 
-                Text(currentStep.name)
-                    .font(.largeTitle)
-                    .padding()
-
-                if let duration = currentStep.durationInSeconds {
-                    Text("\(formatTime(seconds: remainingTime))")
-                        .font(.system(size: 80, weight: .bold, design: .monospaced))
+                    Text(currentStep.name)
+                        .font(.largeTitle)
                         .padding()
-                }
 
-                Button(action: completeStep) {
-                    Text("Complete Step")
-                        .font(.title)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-            } else {
-                Text("Routine Complete!")
-                    .font(.largeTitle)
-                    .padding()
+                    if let duration = currentStep.durationInSeconds {
+                        Text("\(formatTime(seconds: remainingTime))")
+                            .font(.system(size: 80, weight: .bold, design: .monospaced))
+                            .padding()
+                    }
 
-                Button(action: { dismiss() }) {
-                    Text("Finish")
-                        .font(.title)
+                    Button(action: completeStep) {
+                        Text("Complete Step")
+                            .font(.title)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                } else {
+                    Text("Routine Complete!")
+                        .font(.largeTitle)
                         .padding()
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+
+                    Button(action: { dismiss() }) {
+                        Text("Finish")
+                            .font(.title)
+                            .padding()
+                            .background(Color.green)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
                 }
             }
+            .navigationBarTitle("")
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingExitAlert = true }) {
+                        Image(systemName: "xmark")
+                    }
+                }
+            }
+            .alert("End Routine?", isPresented: $showingExitAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("End", role: .destructive) {
+                    dismiss()
+                }
+            } message: {
+                Text("Your progress for this session will not be saved.")
+            }
+            .onAppear(perform: setupStep)
+            .onDisappear(perform: {
+                timer?.cancel()
+            })
         }
-        .onAppear(perform: setupStep)
-        .onDisappear(perform: {
-            timer?.cancel()
-        })
     }
 
     private func setupStep() {

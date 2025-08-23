@@ -3,6 +3,7 @@ import SwiftUI
 struct ProjectDetailView: View {
     @Binding var project: Task
     @State private var showingAddSubtask = false
+    @State private var selectedSubtask: Task?
 
     var body: some View {
         List {
@@ -18,8 +19,13 @@ struct ProjectDetailView: View {
                         .foregroundColor(.secondary)
                 }
                 
-                ForEach(project.subtasks ?? [], id: \.id) { subtask in
-                    Text(subtask.title)
+                ForEach($project.subtasks ?? .constant([])) { $subtask in
+                    Button(action: {
+                        selectedSubtask = subtask
+                    }) {
+                        Text(subtask.title)
+                            .foregroundColor(.primary)
+                    }
                 }
             }
         }
@@ -33,6 +39,12 @@ struct ProjectDetailView: View {
         }
         .sheet(isPresented: $showingAddSubtask) {
             AddSubtaskView(subtasks: $project.subtasks)
+        }
+        .sheet(item: $selectedSubtask) { subtask in
+            // Find the binding to the selected subtask
+            if let index = project.subtasks?.firstIndex(where: { $0.id == subtask.id }) {
+                EditSubtaskView(subtask: $project.subtasks![index])
+            }
         }
     }
 }

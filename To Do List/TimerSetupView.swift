@@ -6,6 +6,8 @@ struct TimerSetupView: View {
     let task: Task
 
     @State private var duration: Int = 25 // Default to 25 minutes
+    @State private var selectedSound: String = "alarm_tone_1.caf"
+    private let sounds = ["alarm_tone_1.caf", "classic_buzzer.wav"]
 
     var body: some View {
         NavigationView {
@@ -15,6 +17,14 @@ struct TimerSetupView: View {
                         TextField("Minutes", value: $duration, format: .number)
                             .keyboardType(.numberPad)
                         Text("minutes")
+                    }
+                }
+
+                Section(header: Text("Alarm Sound")) {
+                    Picker("Sound", selection: $selectedSound) {
+                        ForEach(sounds, id: \.self) { sound in
+                            Text(sound).tag(sound)
+                        }
                     }
                 }
             }
@@ -27,17 +37,11 @@ struct TimerSetupView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Start") {
-                        // The timer logic will be in the next step.
-                        // For now, just schedule a dummy notification.
-                        let content = UNMutableNotificationContent()
-                        content.title = "Time's up for \(task.title)!"
-                        content.sound = .default
-
-                        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(duration * 60), repeats: false)
-                        let request = UNNotificationRequest(identifier: "timer-\(task.id.uuidString)", content: content, trigger: trigger)
-
-                        UNUserNotificationCenter.current().add(request)
-
+                        NotificationManager.shared.scheduleTimerNotification(
+                            task: task,
+                            duration: TimeInterval(duration * 60),
+                            sound: UNNotificationSoundName(rawValue: selectedSound)
+                        )
                         dismiss()
                     }
                 }

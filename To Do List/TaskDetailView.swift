@@ -34,7 +34,19 @@ struct TaskDetailView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Save") {
-                    NotificationManager.shared.scheduleTaskReminder(task: task)
+                    // Debugging Notifications
+                    UNUserNotificationCenter.current().getNotificationSettings { settings in
+                        print("Notification settings: \(settings)")
+                        if settings.authorizationStatus == .authorized {
+                            if let dueDate = task.dueDate {
+                                let triggerDate = dueDate.addingTimeInterval(-600)
+                                let formatter = DateFormatter()
+                                formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                                print("Scheduling notification for task '\(task.title)' at: \(formatter.string(from: triggerDate))")
+                            }
+                            NotificationManager.shared.scheduleTaskReminder(task: task)
+                        }
+                    }
                     presentationMode.wrappedValue.dismiss()
                 }
             }

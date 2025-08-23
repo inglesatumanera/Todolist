@@ -1,10 +1,12 @@
 import SwiftUI
+import UserNotifications
 
 struct TaskCard: View {
     @Binding var task: Task
     @Binding var allTasks: [Task]
     @Binding var categoryData: CategoryManager.CategoryData
-    @State private var showingTimerSetup = false
+    @State private var showingTimerOptions = false
+    @State private var showingCustomTimerSheet = false
 
     var body: some View {
         Group {
@@ -35,7 +37,13 @@ struct TaskCard: View {
                 }
             }
         }
-        .sheet(isPresented: $showingTimerSetup) {
+        .confirmationDialog("Select Timer Duration", isPresented: $showingTimerOptions, titleVisibility: .visible) {
+            Button("10 Minutes") { startTimer(minutes: 10) }
+            Button("25 Minutes (Pomodoro)") { startTimer(minutes: 25) }
+            Button("Custom...") { showingCustomTimerSheet = true }
+            Button("Cancel", role: .cancel) { }
+        }
+        .sheet(isPresented: $showingCustomTimerSheet) {
             TimerSetupView(task: task)
         }
     }
@@ -73,7 +81,7 @@ struct TaskCard: View {
                     Spacer()
 
                     if task.status == .inProgress {
-                        Button(action: { showingTimerSetup = true }) {
+                        Button(action: { showingTimerOptions = true }) {
                             Image(systemName: "timer")
                                 .font(.caption)
                                 .padding(4)
@@ -103,6 +111,14 @@ struct TaskCard: View {
         .background(Color(.systemBackground))
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+    }
+
+    private func startTimer(minutes: Int) {
+        NotificationManager.shared.scheduleTimerNotification(
+            task: task,
+            duration: TimeInterval(minutes * 60),
+            sound: UNNotificationSoundName(rawValue: "alarm_tone_1.caf")
+        )
     }
 
     private var categoryColor: Color {
