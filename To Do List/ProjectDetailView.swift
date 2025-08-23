@@ -49,9 +49,10 @@ struct ProjectDetailView: View {
             AddSubtaskView(subtasks: $project.subtasks)
         }
         .sheet(item: $selectedSubtask) { subtask in
-            // Find the binding to the selected subtask
-            if let index = project.subtasks?.firstIndex(where: { $0.id == subtask.id }) {
-                EditSubtaskView(subtask: $project.subtasks![index])
+            // Find the index of the selected subtask
+            if let index = self.project.subtasks?.firstIndex(where: { $0.id == subtask.id }) {
+                // Use the safe custom binding to get a binding to the subtask
+                EditSubtaskView(subtask: self.subtasksBinding[index])
             }
         }
     }
