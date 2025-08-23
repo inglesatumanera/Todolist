@@ -30,7 +30,7 @@ struct GoalCardView: View {
                 .font(.headline)
                 .lineLimit(2)
 
-            ProgressRingView(progress: progress)
+            ProgressRingView(progress: progress, color: .blue, icon: "target")
                 .frame(width: 50, height: 50)
                 .padding(.top, 5)
 
