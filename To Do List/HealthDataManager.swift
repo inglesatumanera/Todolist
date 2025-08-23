@@ -6,6 +6,7 @@ class HealthDataManager {
     private var dailyLogs: [Date: DailyHealthLog] = [:]
     private var habits: [Habit] = []
     private var negativeHabitLogs: [NegativeHabitLog] = []
+    private var ringAssignments: [String: UUID] = [:]
 
     private init() {
         loadData()
@@ -30,6 +31,10 @@ class HealthDataManager {
         return negativeHabitLogs
     }
 
+    func getRingAssignments() -> [String: UUID] {
+        return ringAssignments
+    }
+
     func update(log: DailyHealthLog) {
         let day = Calendar.current.startOfDay(for: log.date)
         dailyLogs[day] = log
@@ -40,7 +45,6 @@ class HealthDataManager {
         if let index = habits.firstIndex(where: { $0.id == habit.id }) {
             var updatedHabit = habit
 
-            // Only update streak logic when the habit is being marked as complete
             if updatedHabit.isCompleted && !habits[index].isCompleted {
                 if let lastCompletion = habits[index].lastCompletionDate,
                    Calendar.current.isDateInYesterday(lastCompletion) {
@@ -67,12 +71,48 @@ class HealthDataManager {
         saveData()
     }
 
+    func assignHabit(_ habitId: UUID, to ringIdentifier: String) {
+        ringAssignments[ringIdentifier] = habitId
+        saveData()
+    }
+
+    func getWeeklyTriggerSummary() -> [Date: String] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        guard let weekAgo = calendar.date(byAdding: .day, value: -6, to: today) else { return [:] }
+
+        let recentLogs = negativeHabitLogs.filter { $0.date >= weekAgo }
+
+        let groupedByDay = Dictionary(grouping: recentLogs) { log -> Date in
+            return calendar.startOfDay(for: log.date)
+        }
+
+        var summary: [Date: String] = [:]
+
+        for (day, logs) in groupedByDay {
+            let feelings = logs.map { $0.feeling }
+            let locations = logs.map { $0.location }
+
+            let allTriggers = feelings + locations
+
+            let counts = allTriggers.reduce(into: [:]) { counts, trigger in
+                counts[trigger, default: 0] += 1
+            }
+
+            if let mostFrequent = counts.max(by: { $0.value < $1.value })?.key {
+                summary[day] = mostFrequent
+            }
+        }
+
+        return summary
+    }
+
     private func loadData() {
         self.dailyLogs = PersistenceManager.loadDailyHealthLogs()
         self.habits = PersistenceManager.loadHabits()
         self.negativeHabitLogs = PersistenceManager.loadNegativeHabitLogs()
+        self.ringAssignments = PersistenceManager.loadRingAssignments()
 
-        // Create some default habits if there are none
         if self.habits.isEmpty {
             self.habits = [
                 Habit(name: "Took my vitamins"),
@@ -85,5 +125,6 @@ class HealthDataManager {
         PersistenceManager.saveDailyHealthLogs(dailyLogs)
         PersistenceManager.saveHabits(habits)
         PersistenceManager.saveNegativeHabitLogs(negativeHabitLogs)
+        PersistenceManager.saveRingAssignments(ringAssignments)
     }
 }

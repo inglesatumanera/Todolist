@@ -8,7 +8,7 @@ struct HealthView: View {
     @State private var showingRingSwap = false
     @State private var editingRingPosition: RingPosition?
 
-    enum RingPosition {
+    enum RingPosition: String {
         case left, middle, right
     }
 
@@ -23,49 +23,9 @@ struct HealthView: View {
                 VStack(spacing: 20) {
                     // Rings of Progress
                     HStack(spacing: 20) {
-                        ProgressRingView(
-                            progress: Double(viewModel.dailyLog.activityMinutes) / Double(activityGoal),
-                            color: .orange,
-                            icon: "figure.walk"
-                        )
-                        .onTapGesture { showingActivityEntry = true }
-                        .onLongPressGesture {
-                            editingRingPosition = .left
-                            showingRingSwap = true
-                        }
-
-                        VStack {
-                            ProgressRingView(
-                                progress: Double(viewModel.dailyLog.waterIntake) / Double(waterGoal),
-                                color: .blue,
-                                icon: "drop.fill"
-                            )
-                            HStack {
-                                Button(action: {
-                                    if viewModel.dailyLog.waterIntake > 0 {
-                                        viewModel.dailyLog.waterIntake -= 1
-                                        viewModel.updateLog()
-                                    }
-                                }) { Image(systemName: "minus") }
-                                Text("\(viewModel.dailyLog.waterIntake)")
-                                Button(action: {
-                                    viewModel.dailyLog.waterIntake += 1
-                                    viewModel.updateLog()
-                                }) { Image(systemName: "plus") }
-                            }
-                            .font(.caption)
-                        }
-
-                        ProgressRingView(
-                            progress: Double(viewModel.dailyLog.mindfulnessMinutes) / Double(mindfulnessGoal),
-                            color: .purple,
-                            icon: "brain.head.profile"
-                        )
-                        .onTapGesture { showingMindfulnessEntry = true }
-                        .onLongPressGesture {
-                            editingRingPosition = .right
-                            showingRingSwap = true
-                        }
+                        ringView(for: .left)
+                        ringView(for: .middle)
+                        ringView(for: .right)
                     }
                     .padding()
 
@@ -89,25 +49,101 @@ struct HealthView: View {
                         }
                         .frame(height: 200) // Temporary fixed height
                     }
+
+                    Section {
+                        NavigationLink(destination: InsightsView()) {
+                            Text("View Your Insights")
+                        }
+                    }
                 }
             }
             .navigationTitle("Health Hub")
-            .sheet(isPresented: $showingActivityEntry) {
-                ManualEntryView(value: $viewModel.dailyLog.activityMinutes, title: "Log Activity")
-                    .onDisappear(perform: viewModel.updateLog)
-            }
-            .sheet(isPresented: $showingMindfulnessEntry) {
-                ManualEntryView(value: $viewModel.dailyLog.mindfulnessMinutes, title: "Log Mindfulness")
-                    .onDisappear(perform: viewModel.updateLog)
-            }
             .sheet(isPresented: $showingCreateHabit) {
                 CreateHabitView { newHabit in
                     viewModel.addHabit(habit: newHabit)
                 }
             }
             .sheet(isPresented: $showingRingSwap) {
-                // Placeholder for ring swap view
-                Text("Select a Target Goal to display here.")
+                RingSwapView(habits: viewModel.habits) { habit in
+                    if let position = editingRingPosition {
+                        viewModel.assignHabit(habit, to: position.rawValue)
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func ringView(for position: RingPosition) -> some View {
+        let habitId = viewModel.ringAssignments[position.rawValue]
+        let habit = viewModel.habits.first(where: { $0.id == habitId })
+
+        if let habit = habit, let targetValue = habit.targetValue {
+            // Custom Habit Ring
+            ProgressRingView(
+                progress: Double(habit.currentValue) / Double(targetValue),
+                color: .green, // Custom color
+                icon: "star.fill" // Custom icon
+            )
+            .onLongPressGesture {
+                editingRingPosition = position
+                showingRingSwap = true
+            }
+        } else {
+            // Default Rings
+            switch position {
+            case .left:
+                ProgressRingView(
+                    progress: Double(viewModel.dailyLog.activityMinutes) / Double(activityGoal),
+                    color: .orange,
+                    icon: "figure.walk"
+                )
+                .onTapGesture { showingActivityEntry = true }
+                .onLongPressGesture {
+                    editingRingPosition = position
+                    showingRingSwap = true
+                }
+                .sheet(isPresented: $showingActivityEntry) {
+                    ManualEntryView(value: $viewModel.dailyLog.activityMinutes, title: "Log Activity")
+                        .onDisappear(perform: viewModel.updateLog)
+                }
+            case .middle:
+                VStack {
+                    ProgressRingView(
+                        progress: Double(viewModel.dailyLog.waterIntake) / Double(waterGoal),
+                        color: .blue,
+                        icon: "drop.fill"
+                    )
+                    HStack {
+                        Button(action: {
+                            if viewModel.dailyLog.waterIntake > 0 {
+                                viewModel.dailyLog.waterIntake -= 1
+                                viewModel.updateLog()
+                            }
+                        }) { Image(systemName: "minus") }
+                        Text("\(viewModel.dailyLog.waterIntake)")
+                        Button(action: {
+                            viewModel.dailyLog.waterIntake += 1
+                            viewModel.updateLog()
+                        }) { Image(systemName: "plus") }
+                    }
+                    .font(.caption)
+                }
+            case .right:
+                ProgressRingView(
+                    progress: Double(viewModel.dailyLog.mindfulnessMinutes) / Double(mindfulnessGoal),
+                    color: .purple,
+                    icon: "brain.head.profile"
+                )
+                .onTapGesture { showingMindfulnessEntry = true }
+                .onLongPressGesture {
+                    editingRingPosition = position
+                    showingRingSwap = true
+                }
+                .sheet(isPresented: $showingMindfulnessEntry) {
+                    ManualEntryView(value: $viewModel.dailyLog.mindfulnessMinutes, title: "Log Mindfulness")
+                        .onDisappear(perform: viewModel.updateLog)
+                }
             }
         }
     }

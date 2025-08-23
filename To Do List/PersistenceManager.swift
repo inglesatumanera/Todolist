@@ -124,4 +124,24 @@ struct PersistenceManager {
             try? encodedData.write(to: negativeHabitLogsFileUrl)
         }
     }
+
+    static private var ringAssignmentsFileUrl: URL {
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return documentsDirectory.appendingPathComponent("ringAssignments.json")
+    }
+
+    static func loadRingAssignments() -> [String: UUID] {
+        if let data = try? Data(contentsOf: ringAssignmentsFileUrl) {
+            if let decodedAssignments = try? JSONDecoder().decode([String: UUID].self, from: data) {
+                return decodedAssignments
+            }
+        }
+        return [:]
+    }
+
+    static func saveRingAssignments(_ assignments: [String: UUID]) {
+        if let encodedData = try? JSONEncoder().encode(assignments) {
+            try? encodedData.write(to: ringAssignmentsFileUrl)
+        }
+    }
 }
