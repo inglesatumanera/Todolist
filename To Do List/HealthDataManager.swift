@@ -5,6 +5,7 @@ class HealthDataManager {
 
     private var dailyLogs: [Date: DailyHealthLog] = [:]
     private var habits: [Habit] = []
+    private var negativeHabitLogs: [NegativeHabitLog] = []
 
     private init() {
         loadData()
@@ -23,6 +24,10 @@ class HealthDataManager {
 
     func getHabits() -> [Habit] {
         return habits
+    }
+
+    func getNegativeHabitLogs() -> [NegativeHabitLog] {
+        return negativeHabitLogs
     }
 
     func update(log: DailyHealthLog) {
@@ -51,15 +56,27 @@ class HealthDataManager {
         }
     }
 
+    func add(habit: Habit) {
+        habits.append(habit)
+        saveData()
+    }
+
+    func addNegativeHabitLog(habitId: UUID, feeling: String, location: String) {
+        let newLog = NegativeHabitLog(id: UUID(), habitId: habitId, date: Date(), feeling: feeling, location: location)
+        negativeHabitLogs.append(newLog)
+        saveData()
+    }
+
     private func loadData() {
         self.dailyLogs = PersistenceManager.loadDailyHealthLogs()
         self.habits = PersistenceManager.loadHabits()
+        self.negativeHabitLogs = PersistenceManager.loadNegativeHabitLogs()
 
         // Create some default habits if there are none
         if self.habits.isEmpty {
             self.habits = [
-                Habit(id: UUID(), name: "Took my vitamins"),
-                Habit(id: UUID(), name: "Went to bed on time")
+                Habit(name: "Took my vitamins"),
+                Habit(name: "Went to bed on time")
             ]
         }
     }
@@ -67,5 +84,6 @@ class HealthDataManager {
     private func saveData() {
         PersistenceManager.saveDailyHealthLogs(dailyLogs)
         PersistenceManager.saveHabits(habits)
+        PersistenceManager.saveNegativeHabitLogs(negativeHabitLogs)
     }
 }

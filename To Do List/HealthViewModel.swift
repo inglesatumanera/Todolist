@@ -19,4 +19,13 @@ class HealthViewModel: ObservableObject {
     func updateHabit(habit: Habit) {
         healthDataManager.update(habit: habit)
     }
+
+    func addHabit(habit: Habit) {
+        healthDataManager.add(habit: habit)
+        self.habits = healthDataManager.getHabits()
+    }
+
+    func logNegativeHabit(habitId: UUID, feeling: String, location: String) {
+        healthDataManager.addNegativeHabitLog(habitId: habitId, feeling: feeling, location: location)
+    }
 }

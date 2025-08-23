@@ -104,4 +104,24 @@ struct PersistenceManager {
             try? encodedData.write(to: habitsFileUrl)
         }
     }
+
+    static private var negativeHabitLogsFileUrl: URL {
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return documentsDirectory.appendingPathComponent("negativeHabitLogs.json")
+    }
+
+    static func loadNegativeHabitLogs() -> [NegativeHabitLog] {
+        if let data = try? Data(contentsOf: negativeHabitLogsFileUrl) {
+            if let decodedLogs = try? JSONDecoder().decode([NegativeHabitLog].self, from: data) {
+                return decodedLogs
+            }
+        }
+        return []
+    }
+
+    static func saveNegativeHabitLogs(_ logs: [NegativeHabitLog]) {
+        if let encodedData = try? JSONEncoder().encode(logs) {
+            try? encodedData.write(to: negativeHabitLogsFileUrl)
+        }
+    }
 }
