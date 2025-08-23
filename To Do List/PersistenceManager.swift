@@ -144,4 +144,24 @@ struct PersistenceManager {
             try? encodedData.write(to: ringAssignmentsFileUrl)
         }
     }
+
+    static private var unlockedBadgesFileUrl: URL {
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return documentsDirectory.appendingPathComponent("unlockedBadges.json")
+    }
+
+    static func loadUnlockedBadges() -> Set<String> {
+        if let data = try? Data(contentsOf: unlockedBadgesFileUrl) {
+            if let decodedBadges = try? JSONDecoder().decode(Set<String>.self, from: data) {
+                return decodedBadges
+            }
+        }
+        return []
+    }
+
+    static func saveUnlockedBadges(_ badges: Set<String>) {
+        if let encodedData = try? JSONEncoder().encode(badges) {
+            try? encodedData.write(to: unlockedBadgesFileUrl)
+        }
+    }
 }

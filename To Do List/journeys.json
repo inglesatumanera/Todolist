@@ -1,0 +1,33 @@
+[
+    {
+        "id": "E621E1F8-C36C-495A-93FC-0C247A3E6E29",
+        "name": "7-Day Mindful Start",
+        "description": "A one-week introduction to mindfulness.",
+        "durationInDays": 7,
+        "habitTemplates": [
+            {
+                "id": "A621E1F8-C36C-495A-93FC-0C247A3E6E29",
+                "name": "Meditate for 5 minutes",
+                "type": "yesNo",
+                "isNegative": false
+            }
+        ]
+    },
+    {
+        "id": "F621E1F8-C36C-495A-93FC-0C247A3E6E29",
+        "name": "14-Day Hydration Challenge",
+        "description": "Drink 8 glasses of water every day for two weeks.",
+        "durationInDays": 14,
+        "habitTemplates": [
+            {
+                "id": "B621E1F8-C36C-495A-93FC-0C247A3E6E29",
+                "name": "Drink 8 glasses of water",
+                "type": "target",
+                "isNegative": false,
+                "targetValue": 8,
+                "currentValue": 0,
+                "targetUnit": "glasses"
+            }
+        ]
+    }
+]

@@ -54,6 +54,15 @@ struct HealthView: View {
                         NavigationLink(destination: InsightsView()) {
                             Text("View Your Insights")
                         }
+                        NavigationLink(destination: JourneysView()) {
+                            Text("Browse Journeys")
+                        }
+                        NavigationLink(destination: AnalyticsView()) {
+                            Text("View Progress")
+                        }
+                        NavigationLink(destination: BadgesView()) {
+                            Text("View Badges")
+                        }
                     }
                 }
             }

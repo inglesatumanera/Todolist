@@ -38,6 +38,7 @@ struct HabitRowView: View {
                     onUpdate(updatedHabit)
                 }) {
                     Image(systemName: habit.isCompleted ? "checkmark.square.fill" : "square")
+                        .animation(.spring(), value: habit.isCompleted)
                 }
                 .buttonStyle(BorderlessButtonStyle())
             }

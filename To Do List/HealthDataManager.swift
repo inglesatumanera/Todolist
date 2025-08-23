@@ -7,6 +7,8 @@ class HealthDataManager {
     private var habits: [Habit] = []
     private var negativeHabitLogs: [NegativeHabitLog] = []
     private var ringAssignments: [String: UUID] = [:]
+    private(set) var journeys: [Journey] = []
+    private(set) var unlockedBadges: Set<String> = []
 
     private init() {
         loadData()
@@ -71,9 +73,48 @@ class HealthDataManager {
         saveData()
     }
 
+    func startJourney(journey: Journey) {
+        for habitTemplate in journey.habitTemplates {
+            var newHabit: Habit
+            if habitTemplate.type == .target {
+                newHabit = Habit(
+                    name: habitTemplate.name,
+                    type: .target,
+                    targetValue: habitTemplate.targetValue ?? 0,
+                    targetUnit: habitTemplate.targetUnit ?? ""
+                )
+            } else {
+                newHabit = Habit(
+                    name: habitTemplate.name,
+                    type: .yesNo,
+                    isNegative: habitTemplate.isNegative
+                )
+            }
+            add(habit: newHabit)
+        }
+    }
+
     func assignHabit(_ habitId: UUID, to ringIdentifier: String) {
         ringAssignments[ringIdentifier] = habitId
         saveData()
+    }
+
+    func getWeeklyWaterIntake() -> [Int] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        var weeklyIntake: [Int] = []
+
+        for i in (0..<7).reversed() {
+            if let day = calendar.date(byAdding: .day, value: -i, to: today) {
+                let log = dailyLogs[day]
+                weeklyIntake.append(log?.waterIntake ?? 0)
+            }
+        }
+        return weeklyIntake
+    }
+
+    func getLongestStreak() -> Int {
+        return habits.map { $0.streak }.max() ?? 0
     }
 
     func getWeeklyTriggerSummary() -> [Date: String] {
@@ -112,6 +153,8 @@ class HealthDataManager {
         self.habits = PersistenceManager.loadHabits()
         self.negativeHabitLogs = PersistenceManager.loadNegativeHabitLogs()
         self.ringAssignments = PersistenceManager.loadRingAssignments()
+        self.unlockedBadges = PersistenceManager.loadUnlockedBadges()
+        loadJourneys()
 
         if self.habits.isEmpty {
             self.habits = [
@@ -126,5 +169,38 @@ class HealthDataManager {
         PersistenceManager.saveHabits(habits)
         PersistenceManager.saveNegativeHabitLogs(negativeHabitLogs)
         PersistenceManager.saveRingAssignments(ringAssignments)
+
+        checkBadges() // Check for new badges before saving
+        PersistenceManager.saveUnlockedBadges(unlockedBadges)
+    }
+
+    private func checkBadges() {
+        // 7-Day Streak
+        if habits.contains(where: { $0.streak >= 7 }) {
+            unlockBadge(id: "7DayStreak")
+        }
+
+        // 100 Workouts
+        let totalActivity = dailyLogs.values.reduce(0) { $0 + $1.activityMinutes }
+        if totalActivity >= 100 {
+            unlockBadge(id: "100Workouts")
+        }
+    }
+
+    private func unlockBadge(id: String) {
+        unlockedBadges.insert(id)
+    }
+
+    private func loadJourneys() {
+        if let url = Bundle.main.url(forResource: "journeys", withExtension: "json") {
+            do {
+                let data = try Data(contentsOf: url)
+                let decoder = JSONDecoder()
+                let loadedJourneys = try decoder.decode([Journey].self, from: data)
+                self.journeys = loadedJourneys
+            } catch {
+                print("Error loading journeys.json: \(error)")
+            }
+        }
     }
 }
