@@ -21,6 +21,14 @@ struct TaskCard: View {
             }
         }
         .contextMenu {
+            if task.status == .inProgress {
+                Button {
+                    showingTimerOptions = true
+                } label: {
+                    Label("Start Timer", systemImage: "timer")
+                }
+            }
+
             if task.status == .todo {
                 Button {
                     self.moveTask(to: .inProgress)
@@ -79,16 +87,6 @@ struct TaskCard: View {
                         }
                     }
                     Spacer()
-
-                    if task.status == .inProgress {
-                        Button(action: { showingTimerOptions = true }) {
-                            Image(systemName: "timer")
-                                .font(.caption)
-                                .padding(4)
-                                .background(Color.blue.opacity(0.2))
-                                .cornerRadius(4)
-                        }
-                    }
 
                     Menu {
                         Button("To-Do") { self.moveTask(to: .todo) }
