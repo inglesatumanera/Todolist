@@ -5,6 +5,14 @@ struct ProjectDetailView: View {
     @State private var showingAddSubtask = false
     @State private var selectedSubtask: Task?
 
+    // Custom binding to handle the optional subtasks array
+    private var subtasksBinding: Binding<[Task]> {
+        Binding(
+            get: { self.project.subtasks ?? [] },
+            set: { self.project.subtasks = $0 }
+        )
+    }
+
     var body: some View {
         List {
             Section {
@@ -19,7 +27,7 @@ struct ProjectDetailView: View {
                         .foregroundColor(.secondary)
                 }
                 
-                ForEach($project.subtasks ?? .constant([])) { $subtask in
+                ForEach(subtasksBinding) { $subtask in
                     Button(action: {
                         selectedSubtask = subtask
                     }) {
