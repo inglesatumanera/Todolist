@@ -65,23 +65,43 @@ struct PersistenceManager {
         }
     }
 
-    static private var healthLogsFileUrl: URL {
+    static private var dailyHealthLogsFileUrl: URL {
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        return documentsDirectory.appendingPathComponent("healthLogs.json")
+        return documentsDirectory.appendingPathComponent("dailyHealthLogs.json")
     }
 
-    static func loadHealthLogs() -> [HealthLog] {
-        if let data = try? Data(contentsOf: healthLogsFileUrl) {
-            if let decodedHealthLogs = try? JSONDecoder().decode([HealthLog].self, from: data) {
-                return decodedHealthLogs
+    static func loadDailyHealthLogs() -> [Date: DailyHealthLog] {
+        if let data = try? Data(contentsOf: dailyHealthLogsFileUrl) {
+            if let decodedLogs = try? JSONDecoder().decode([Date: DailyHealthLog].self, from: data) {
+                return decodedLogs
+            }
+        }
+        return [:]
+    }
+
+    static func saveDailyHealthLogs(_ logs: [Date: DailyHealthLog]) {
+        if let encodedData = try? JSONEncoder().encode(logs) {
+            try? encodedData.write(to: dailyHealthLogsFileUrl)
+        }
+    }
+
+    static private var habitsFileUrl: URL {
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return documentsDirectory.appendingPathComponent("habits.json")
+    }
+
+    static func loadHabits() -> [Habit] {
+        if let data = try? Data(contentsOf: habitsFileUrl) {
+            if let decodedHabits = try? JSONDecoder().decode([Habit].self, from: data) {
+                return decodedHabits
             }
         }
         return []
     }
 
-    static func saveHealthLogs(_ healthLogs: [HealthLog]) {
-        if let encodedData = try? JSONEncoder().encode(healthLogs) {
-            try? encodedData.write(to: healthLogsFileUrl)
+    static func saveHabits(_ habits: [Habit]) {
+        if let encodedData = try? JSONEncoder().encode(habits) {
+            try? encodedData.write(to: habitsFileUrl)
         }
     }
 }

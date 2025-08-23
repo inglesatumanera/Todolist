@@ -1,136 +1,97 @@
 import SwiftUI
 
 struct HealthView: View {
-    @State private var healthLogs: [HealthLog] = []
-    @State private var todayLog: HealthLog = HealthLog(id: Date()) // Default empty log for today
+    @StateObject private var viewModel = HealthViewModel()
+    @State private var showingActivityEntry = false
+    @State private var showingMindfulnessEntry = false
 
-    // Water goal in glasses
-    private let waterGoal = 8
-    private let dailyGoal = 30
-
-    private var currentScore: Int {
-        var score = 0
-        score += todayLog.waterIntake
-        if todayLog.didEatClean { score += 10 }
-        if todayLog.hadNoJunkFood { score += 5 }
-        if todayLog.hadNoSugaryDrinks { score += 5 }
-        if todayLog.weight != nil { score += 2 }
-        return score
-    }
-
-    private var recentGoalsMet: Int {
-        let sevenDaysAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())!
-        return healthLogs.filter { log in
-            log.id >= sevenDaysAgo && log.dailyGoalMet
-        }.count
-    }
+    // Goals
+    private let activityGoal = 60 // minutes
+    private let waterGoal = 8 // glasses
+    private let mindfulnessGoal = 10 // minutes
 
     var body: some View {
         NavigationView {
-            Form {
-                // Cheat Meal Section
-                if recentGoalsMet >= 6 {
-                    Section(header: Text("Rewards")) {
-                        HStack {
-                            Image(systemName: "star.fill")
-                                .foregroundColor(.yellow)
-                            Text("Cheat Meal Unlocked!")
-                                .font(.headline)
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Rings of Progress
+                    HStack(spacing: 20) {
+                        Button(action: { showingActivityEntry = true }) {
+                            ProgressRingView(
+                                progress: Double(viewModel.dailyLog.activityMinutes) / Double(activityGoal),
+                                color: .orange,
+                                icon: "figure.walk"
+                            )
                         }
-                    }
-                }
 
-                // Daily Goal Progress Section
-                Section(header: Text("Daily Goal Progress")) {
-                    VStack {
-                        ProgressView(value: Double(currentScore), total: Double(dailyGoal))
-                            .progressViewStyle(LinearProgressViewStyle())
-                        Text("\(currentScore) / \(dailyGoal) Points")
+                        VStack {
+                            ProgressRingView(
+                                progress: Double(viewModel.dailyLog.waterIntake) / Double(waterGoal),
+                                color: .blue,
+                                icon: "drop.fill"
+                            )
+                            HStack {
+                                Button(action: {
+                                    viewModel.dailyLog.waterIntake -= 1
+                                    viewModel.updateLog()
+                                }) { Image(systemName: "minus") }
+                                Text("\(viewModel.dailyLog.waterIntake)")
+                                Button(action: {
+                                    viewModel.dailyLog.waterIntake += 1
+                                    viewModel.updateLog()
+                                }) { Image(systemName: "plus") }
+                            }
+                            .font(.caption)
+                        }
+
+                        Button(action: { showingMindfulnessEntry = true }) {
+                            ProgressRingView(
+                                progress: Double(viewModel.dailyLog.mindfulnessMinutes) / Double(mindfulnessGoal),
+                                color: .purple,
+                                icon: "brain.head.profile"
+                            )
+                        }
                     }
                     .padding()
-                }
 
-                // Water Intake Section
-                Section(header: Text("Water Intake")) {
-                    VStack {
-                        CircularProgressBar(progress: Double(todayLog.waterIntake) / Double(waterGoal))
-                            .frame(width: 150, height: 150)
-                            .padding()
+                    // Habit List
+                    VStack(alignment: .leading) {
+                        Text("Today's Habits")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .padding(.horizontal)
 
-                        Text("\(todayLog.waterIntake) / \(waterGoal) glasses")
-
-                        HStack {
-                            Button(action: {
-                                if todayLog.waterIntake > 0 {
-                                    todayLog.waterIntake -= 1
-                                    saveLog()
+                        List {
+                            ForEach($viewModel.habits) { $habit in
+                                HStack {
+                                    Text(habit.name)
+                                    Spacer()
+                                    Text("Streak: \(habit.streak)")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    Button(action: {
+                                        habit.isCompleted.toggle()
+                                        viewModel.updateHabit(habit: habit)
+                                    }) {
+                                        Image(systemName: habit.isCompleted ? "checkmark.square.fill" : "square")
+                                    }
+                                    .buttonStyle(BorderlessButtonStyle())
                                 }
-                            }) {
-                                Image(systemName: "minus.circle")
-                                    .font(.title)
-                            }
-                            Spacer()
-                            Button(action: {
-                                todayLog.waterIntake += 1
-                                saveLog()
-                            }) {
-                                Image(systemName: "plus.circle")
-                                    .font(.title)
                             }
                         }
-                        .padding(.horizontal)
+                        .frame(height: 200) // Temporary fixed height
                     }
-                }
-
-                // Weight Section
-                Section(header: Text("Weight")) {
-                    HStack {
-                        Text("Today's Weight:")
-                        TextField("kg", value: $todayLog.weight, format: .number)
-                            .keyboardType(.decimalPad)
-                            .onChange(of: todayLog.weight) { _ in saveLog() }
-                    }
-                }
-
-                // Dietary Choices Section
-                Section(header: Text("Dietary Choices")) {
-                    Toggle("Ate Clean", isOn: $todayLog.didEatClean)
-                        .onChange(of: todayLog.didEatClean) { _ in saveLog() }
-                    Toggle("No Junk Food", isOn: $todayLog.hadNoJunkFood)
-                        .onChange(of: todayLog.hadNoJunkFood) { _ in saveLog() }
-                    Toggle("No Sugary Drinks", isOn: $todayLog.hadNoSugaryDrinks)
-                        .onChange(of: todayLog.hadNoSugaryDrinks) { _ in saveLog() }
                 }
             }
             .navigationTitle("Health Hub")
-            .onAppear(perform: loadLogForToday)
-        }
-    }
-
-    private func loadLogForToday() {
-        healthLogs = PersistenceManager.loadHealthLogs()
-        if let log = healthLogs.first(where: { Calendar.current.isDateInToday($0.id) }) {
-            todayLog = log
-        } else {
-            let newLog = HealthLog(id: Date())
-            todayLog = newLog
-            healthLogs.append(newLog)
-            PersistenceManager.saveHealthLogs(healthLogs)
-        }
-    }
-
-    private func saveLog() {
-        if let index = healthLogs.firstIndex(where: { Calendar.current.isDateInToday($0.id) }) {
-            // before saving, check if the goal is met
-            if currentScore >= dailyGoal {
-                todayLog.dailyGoalMet = true
-            } else {
-                todayLog.dailyGoalMet = false
+            .sheet(isPresented: $showingActivityEntry) {
+                ManualEntryView(value: $viewModel.dailyLog.activityMinutes, title: "Log Activity")
+                    .onDisappear(perform: viewModel.updateLog)
             }
-            healthLogs[index] = todayLog
-        } else {
-            healthLogs.append(todayLog)
+            .sheet(isPresented: $showingMindfulnessEntry) {
+                ManualEntryView(value: $viewModel.dailyLog.mindfulnessMinutes, title: "Log Mindfulness")
+                    .onDisappear(perform: viewModel.updateLog)
+            }
         }
-        PersistenceManager.saveHealthLogs(healthLogs)
     }
 }
