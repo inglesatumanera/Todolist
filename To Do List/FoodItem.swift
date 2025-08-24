@@ -6,4 +6,7 @@ struct FoodItem: Codable, Identifiable, Equatable {
     var category: String // "Protein", "Carbs", "Fat"
     var grams: Double
     var calories: Int
+    var protein: Double?
+    var carbs: Double?
+    var fat: Double?
 }

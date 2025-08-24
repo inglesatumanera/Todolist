@@ -16,15 +16,15 @@ struct DailyHealthLog: Codable, Equatable {
 
     // Computed properties for macro totals
     var totalProtein: Double {
-        foodLog.filter { $0.category == "Protein" }.reduce(0) { $0 + $1.grams }
+        foodLog.reduce(0) { $0 + ($1.protein ?? 0) }
     }
 
     var totalCarbs: Double {
-        foodLog.filter { $0.category == "Carbs" }.reduce(0) { $0 + $1.grams }
+        foodLog.reduce(0) { $0 + ($1.carbs ?? 0) }
     }
 
     var totalFat: Double {
-        foodLog.filter { $0.category == "Fat" }.reduce(0) { $0 + $1.grams }
+        foodLog.reduce(0) { $0 + ($1.fat ?? 0) }
     }
 
     var caloriesConsumed: Int {

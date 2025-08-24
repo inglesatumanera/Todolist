@@ -101,10 +101,15 @@ struct HealthView: View {
 
                         List {
                             ForEach(viewModel.dailyLog.foodLog) { food in
-                                HStack {
-                                    Text(food.name)
-                                    Spacer()
-                                    Text("\(food.calories) kcal")
+                                VStack(alignment: .leading) {
+                                    HStack {
+                                        Text(food.name)
+                                        Spacer()
+                                        Text("\(food.calories) kcal")
+                                    }
+                                    Text("P: \(Int(food.protein ?? 0))g C: \(Int(food.carbs ?? 0))g F: \(Int(food.fat ?? 0))g")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
                                 }
                             }
                         }
